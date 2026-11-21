@@ -136,7 +136,12 @@ Claude Code works through these in order, committing after each step, and only s
 6. **Storage model**: fit on history, save coefficients, back-test on last winter (report error at 31 March).
 7. **Storage page**: UI, scenarios, charts.
 8. **Automation**: daily GitHub Action, failure handling (keep last good data), deploy.
-9. **Polish**: home, about, methodology, footer, mobile check, Lighthouse score above 90, accessibility basics.
+9. **Polish**: home, about, methodology, footer, mobile check, Lighthouse score above 90, accessibility basics. Plus SEO:
+   - Rename the site to "LNG Flow Tools" everywhere (site config, page titles, header, footer, README, SPEC.md, CLAUDE.md). Keep the repo name and the pages.dev URL unchanged.
+   - Rename routes: /netback -> /lng-netback-calculator and /storage -> /eu-gas-storage-forecast, with redirects from the old paths; update all internal links.
+   - Page titles: "LNG Netback & Arbitrage Calculator: US Gulf to Europe and Asia" and "EU Gas Storage Forecast: Winter Stress Test to 31 March".
+   - A unique meta description (max 155 characters) per page, Open Graph tags, canonical URLs, sitemap.xml, and robots.txt allowing indexing.
+   - A 2 to 3 sentence plain-English intro at the top of each tool page, using the terms people search for (LNG netback, LNG arbitrage, JKM TTF spread, EU gas storage forecast).
 10. **Final review**: run all tests, check every attribution is present, check all pages on mobile width. [CHECKPOINT: summary of what was built, known limitations, suggested v1.1 items]
 
 ## 9. Out of scope for v1

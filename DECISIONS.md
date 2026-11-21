@@ -10,3 +10,9 @@ One line each: date, decision, reason.
 - 2026-11-21: Pages project created with `wrangler pages project create --force`. Wrangler 4.166 otherwise redirects Pages commands to Workers; SPEC names Cloudflare Pages. Wrangler confirms `--force` is needed only once, at creation.
 - 2026-11-21: Added `site/wrangler.toml` with `pages_build_output_dir = "./dist"` so wrangler treats `site/` as a Pages project.
 - 2026-11-21: Cloudflare token can deploy Pages but cannot read user details (`wrangler whoami` fails). Not needed, so left as is.
+- 2026-11-21: ">10% change" flag in phase 2 read as "public sources disagree by more than 10%", since no assumptions.json existed to compare against. Flags listed in data/assumptions_sources.md.
+- 2026-11-21: TTF and JKM defaults stored as indicative round numbers from public press reports (EUR 85/MWh, $27/MMBtu), labelled manual and user-editable. JKM labelled "North Asia spot LNG (JKM proxy)". No licensed assessment or exchange feed is fetched or stored (hard rule 1).
+- 2026-11-21: Canal fee per transit = average of laden and ballast toll, applied twice per round trip, so the SPEC formula "canal fees (both ways)" stays a simple 2 x fee.
+- 2026-11-21: Tokyo Bay used as the North Asia reference port for all three Asia routes.
+- 2026-11-21: Cargo MMBtu = full vessel capacity x conversion factor; heel and fill limit ignored. Documented simplification.
+- 2026-11-21: ECB API docs (data.ecb.europa.eu/help) returned HTTP 503 on 2026-11-21. EUR/USD default taken from the ECB reference-rate web page; API endpoint to be confirmed from docs in phase 5.

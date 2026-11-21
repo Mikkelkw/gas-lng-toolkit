@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "verified": "2026-11-21",
+  "note": "Defaults for the netback calculator. Every value is user-editable on the site. Sources and verification notes: data/assumptions_sources.md. henryHub and eurusd are refreshed daily by the pipeline; the values here are fallbacks.",
+  "inputs": {
+    "henryHub": {
+      "label": "Henry Hub spot",
+      "value": 3.10,
+      "unit": "$/MMBtu",
+      "asOf": "2026-11-17",
+      "source": "EIA, Henry Hub Natural Gas Spot Price (series RNGWHHD), API v2"
+    },
+    "ttf": {
+      "label": "TTF front-month",
+      "value": 85.00,
+      "unit": "EUR/MWh",
+      "asOf": "2026-11-20",
+      "source": "Manual. Indicative round level from public press reports of the Dec-26 contract (EUR 85 to 86/MWh). Not a licensed assessment."
+    },
+    "jkm": {
+      "label": "North Asia spot LNG (JKM proxy)",
+      "value": 27.00,
+      "unit": "$/MMBtu",
+      "asOf": "2026-11-20",
+      "source": "Manual. Indicative round level from public press reports of the weekly North-east Asia spot LNG average for January delivery ($26.90/MMBtu). Not a licensed assessment."
+    },
+    "eurusd": {
+      "label": "EUR/USD",
+      "value": 1.0990,
+      "unit": "USD per EUR",
+      "asOf": "2026-11-20",
+      "source": "ECB euro foreign exchange reference rate"
+    },
+    "charterRate": {
+      "label": "Charter rate (174k m3, two-stroke, Atlantic spot)",
+      "value": 35000,
+      "unit": "$/day",
+      "asOf": "2026-11-18",
+      "source": "Public weekly shipping commentary: Atlantic two-stroke $38,400/day (week 45) and $33,200/day (week 46), 2026"
+    },
+    "vesselSize": {
+      "label": "Vessel cargo capacity",
+      "value": 174000,
+      "unit": "m3",
+      "asOf": "2026-11-21",
+      "source": "Industry standard newbuild size (IIR, 'The future standard for energy-saving LNG carriers')"
+    },
+    "mmbtuPerM3": {
+      "label": "Conversion factor",
+      "value": 23.4,
+      "unit": "MMBtu per m3 LNG",
+      "asOf": "2026-11-21",
+      "source": "0.45 t/m3 LNG density x 52 MMBtu/t (common industry factors). Gasgrid Finland conversion table gives 24.02 (+2.6%)."
+    },
+    "boilOff": {
+      "label": "Boil-off rate (laden)",
+      "value": 0.085,
+      "unit": "% per day",
+      "asOf": "2026-11-21",
+      "source": "Modern membrane carrier benchmark 0.085%/day (Gas Carrier Update 2015, Univ. Hamburg); Argus cites 0.08%/day for a typical two-stroke carrier"
+    },
+    "speed": {
+      "label": "Vessel speed",
+      "value": 17,
+      "unit": "knots",
+      "asOf": "2026-11-21",
+      "source": "Implied by Kpler voyage times (via MET Group, 2023): 22 days via Panama, 35 via Suez, 38 via Cape, which equal 17.2 to 17.4 knots on the distances below"
+    },
+    "panamaFee": {
+      "label": "Panama Canal fee",
+      "value": 640000,
+      "unit": "$ per transit",
+      "asOf": "2026-11-21",
+      "source": "Panama Canal Authority tolls page: Neopanamax LNG fixed $300,000/transit + $2.05/m3 capacity, ballast 85% of tolls, mandatory Neopanamax tug $30,000. Average of laden and ballast for 174,000 m3."
+    },
+    "suezFee": {
+      "label": "Suez Canal fee",
+      "value": 450000,
+      "unit": "$ per transit",
+      "asOf": "2026-11-21",
+      "source": "Nominal LNG carrier toll about $397,000 (Argus table, undated) plus SCA temporary surcharge for LNG carriers raised to 19% from 15 July 2026. Rebates for US Gulf to Asia vary. Low confidence."
+    },
+    "portCosts": {
+      "label": "Port and other costs",
+      "value": 250000,
+      "unit": "$ per voyage",
+      "asOf": "2026-11-21",
+      "source": "US Gulf load port under $70,000/call (Wood Mackenzie via Riviera, 2025) plus discharge port about $150,000 to $250,000 (Platts port-cost notes, 2024), plus agency and sundries"
+    },
+    "liquefactionFee": {
+      "label": "Liquefaction fee",
+      "value": 2.75,
+      "unit": "$/MMBtu",
+      "asOf": "2026-11-21",
+      "source": "Cheniere Q4 2025 call: pricing above midpoint of $2.50 to $3.00 range (via S&P Global, 2026); Argus Dec 2025 indicative benchmark $3.00"
+    },
+    "feedgasMultiplier": {
+      "label": "Feedgas multiplier",
+      "value": 115,
+      "unit": "% of Henry Hub",
+      "asOf": "2026-11-21",
+      "source": "Cheniere Sabine Pass SPAs: 115% of Henry Hub plus fixed fee (SEC filings)"
+    }
+  },
+  "routes": [
+    {
+      "id": "nwe",
+      "label": "NW Europe (TTF), direct",
+      "market": "ttf",
+      "canal": null,
+      "distanceNm": 5300,
+      "source": "Sabine Pass to Gravelines 5,152 nm (Sealagom) plus about 150 nm to Rotterdam; ports.com gives 5,657 nm"
+    },
+    {
+      "id": "asia-panama",
+      "label": "North Asia (JKM) via Panama",
+      "market": "jkm",
+      "canal": "panama",
+      "distanceNm": 9209,
+      "source": "Sabine Pass to Tokyo via Panama, 9,209 nm (Riviera Maritime Media); S&P Global gives 9,214 nm"
+    },
+    {
+      "id": "asia-suez",
+      "label": "North Asia (JKM) via Suez",
+      "market": "jkm",
+      "canal": "suez",
+      "distanceNm": 14521,
+      "source": "Sabine Pass to Tokyo via Suez, 14,521 nm (Riviera, citing sea-distances.org); S&P Global gives about 14,500"
+    },
+    {
+      "id": "asia-cape",
+      "label": "North Asia (JKM) via Cape of Good Hope",
+      "market": "jkm",
+      "canal": null,
+      "distanceNm": 15689,
+      "source": "Sabine Pass to Tokyo via Cape of Good Hope, 15,689 nm (S&P Global, 2016)"
+    }
+  ]
+}
