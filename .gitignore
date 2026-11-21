@@ -1,0 +1,23 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node / Astro
+node_modules/
+site/dist/
+site/.astro/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+pipeline/.cache/
+
+# Wrangler / OS / editor
+.wrangler/
+.DS_Store
+Thumbs.db
+.vscode/
