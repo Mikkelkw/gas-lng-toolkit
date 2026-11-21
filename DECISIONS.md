@@ -16,3 +16,4 @@ One line each: date, decision, reason.
 - 2026-11-21: Tokyo Bay used as the North Asia reference port for all three Asia routes.
 - 2026-11-21: Cargo MMBtu = full vessel capacity x conversion factor; heel and fill limit ignored. Documented simplification.
 - 2026-11-21: ECB API docs (data.ecb.europa.eu/help) returned HTTP 503 on 2026-11-21. EUR/USD default taken from the ECB reference-rate web page; API endpoint to be confirmed from docs in phase 5.
+- 2026-11-21: Breakeven JKM solved in closed form (netback linear in JKM per route); breakeven charter rate by bisection, valid because the arb falls monotonically with charter rate.

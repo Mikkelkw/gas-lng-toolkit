@@ -4,7 +4,7 @@
 |---|---|
 | 1. Scaffold | done |
 | 2. Assumptions | done |
-| 3. Netback engine | not started |
+| 3. Netback engine | done |
 | 4. Netback page | not started |
 | 5. Storage pipeline | not started |
 | 6. Storage model | not started |
@@ -33,3 +33,10 @@
 - Eight defaults flagged where public sources disagree by over 10%: JKM proxy, charter rate, boil-off, speed, Suez fee, port costs, liquefaction fee (and TTF/JKM are manual by design).
 - New pytest checks every input has a value, unit, date and source, and appears in the sources doc. 20 tests pass.
 - ECB API docs were down (HTTP 503); retry in phase 5.
+
+### Phase 3: Netback engine
+- `site/src/lib/netback.ts`: pure module with SPEC formulas, closed-form breakeven JKM, charter sensitivity and breakeven charter rate (bisection).
+- `site/src/lib/assumptions.ts`: typed loader for `data/assumptions.json`.
+- 18 netback tests including a hand-calculated case. Vitest 22 passed, pytest 20 passed.
+- Defaults give: TTF $27.38, NWE netback $26.78, best Asia (Panama) $25.69, arb -$1.09, breakeven JKM $28.11/MMBtu.
+- Note: owner added SEO and rename items to SPEC phase 9 (rename to "LNG Flow Tools", new routes). Picked up in phase 9.
