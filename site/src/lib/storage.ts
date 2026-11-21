@@ -192,8 +192,12 @@ export function storageHeadline(end: PathPoint, endDay: string, range?: LikelyRa
 export interface ErrorPoint {
   /** Days from the last data day to 31 March. */
   daysLeft: number;
-  /** Projected minus actual 31 March storage. Positive means the model left too much gas in storage. */
+  /** Signed error with the larger magnitude of the two runs: projected minus actual. Positive = too much gas left. */
   errorPp: number;
+  /** How far the model over-predicted storage (>= 0): the room needed below the projection. */
+  overPp: number;
+  /** How far the model under-predicted storage (>= 0): the room needed above the projection. */
+  underPp: number;
 }
 
 export interface BacktestCase {
@@ -203,36 +207,65 @@ export interface BacktestCase {
 }
 
 /**
- * One error point per back-test case: the larger absolute error of the actual-weather and
- * normal-weather runs, keeping its sign. A case starting on day S uses data to S - 1.
+ * One point per back-test case, keeping the sign of the errors from both runs (actual and
+ * normal weather). A case starting on day S uses data to S - 1.
  */
 export function backtestErrors(cases: BacktestCase[], endDay: string): ErrorPoint[] {
   return cases
     .map((c) => {
       const a = c.actualWeather.errorPp;
       const n = c.normalWeather.errorPp;
-      return { daysLeft: daysBetween(addDays(c.start, -1), endDay), errorPp: Math.abs(a) >= Math.abs(n) ? a : n };
+      return {
+        daysLeft: daysBetween(addDays(c.start, -1), endDay),
+        errorPp: Math.abs(a) >= Math.abs(n) ? a : n,
+        overPp: Math.max(0, a, n),
+        underPp: Math.max(0, -a, -n),
+      };
     })
     .sort((x, y) => x.daysLeft - y.daysLeft);
 }
 
-/**
- * Half-width of the likely range (pp) for a projection with `daysLeft` days to go.
- * Linear in the horizon through the back-test points, zero at 31 March, flat beyond the
- * longest back-tested horizon. No bias correction: the band is symmetric about the projection.
- */
-export function uncertaintyPp(points: ErrorPoint[], daysLeft: number): number {
+/** Linear in the horizon through (0, 0) and the points; flat beyond the longest horizon. */
+function interpolate(points: { daysLeft: number; v: number }[], daysLeft: number): number {
   if (daysLeft <= 0 || points.length === 0) return 0;
-  const pts = [{ daysLeft: 0, err: 0 }, ...points.map((p) => ({ daysLeft: p.daysLeft, err: Math.abs(p.errorPp) }))];
+  const pts = [{ daysLeft: 0, v: 0 }, ...points];
   for (let k = 1; k < pts.length; k++) {
     const lo = pts[k - 1];
     const hi = pts[k];
     if (daysLeft <= hi.daysLeft) {
       const t = hi.daysLeft === lo.daysLeft ? 1 : (daysLeft - lo.daysLeft) / (hi.daysLeft - lo.daysLeft);
-      return lo.err + t * (hi.err - lo.err);
+      return lo.v + t * (hi.v - lo.v);
     }
   }
-  return pts[pts.length - 1].err;
+  return pts[pts.length - 1].v;
+}
+
+/**
+ * Day-to-day fit error carried to 31 March, in pp: 100 x RMSE x sqrt(days) / WGV.
+ * Treats daily errors as independent, so it is a floor, not a full error estimate.
+ */
+export function noiseFloorPp(noisePpPerSqrtDay: number, daysLeft: number): number {
+  return daysLeft > 0 && noisePpPerSqrtDay > 0 ? noisePpPerSqrtDay * Math.sqrt(daysLeft) : 0;
+}
+
+/** Room below (down) and above (up) the projection, in pp. */
+export interface Band {
+  down: number;
+  up: number;
+}
+
+/**
+ * Asymmetric likely range from the signed back-test errors. Below the projection: how far the
+ * model over-predicted storage; above it: how far it under-predicted. Each side is at least the
+ * day-to-day fit error, so a side the back-test never missed on is not given zero width.
+ * The projection itself is not moved: no bias correction.
+ */
+export function uncertaintyBand(points: ErrorPoint[], daysLeft: number, noisePpPerSqrtDay = 0): Band {
+  if (daysLeft <= 0) return { down: 0, up: 0 };
+  const floor = noiseFloorPp(noisePpPerSqrtDay, daysLeft);
+  const over = interpolate(points.map((p) => ({ daysLeft: p.daysLeft, v: p.overPp })), daysLeft);
+  const under = interpolate(points.map((p) => ({ daysLeft: p.daysLeft, v: p.underPp })), daysLeft);
+  return { down: Math.max(over, floor), up: Math.max(under, floor) };
 }
 
 export interface LikelyRange {
@@ -240,14 +273,26 @@ export interface LikelyRange {
   high: number; // % full
 }
 
-/** Projection ± half-width, kept between 0% and 100% full. */
-export function likelyRange(fullPct: number, halfWidthPp: number): LikelyRange {
-  return { low: Math.max(0, fullPct - halfWidthPp), high: Math.min(100, fullPct + halfWidthPp) };
+/** Projection minus `down` to projection plus `up`, kept between 0% and 100% full. */
+export function likelyRange(fullPct: number, band: Band): LikelyRange {
+  return { low: Math.max(0, fullPct - band.down), high: Math.min(100, fullPct + band.up) };
 }
 
-/** "Likely range 16.9 to 22.4%". */
+/** "likely range 16.9 to 21.0%". */
 export function rangeText(r: LikelyRange): string {
   return `likely range ${r.low.toFixed(1)} to ${r.high.toFixed(1)}%`;
+}
+
+/** Why the range is lopsided, in one sentence, from the back-test itself. Shown on the tool and on /methodology. */
+export function asymmetryNote(points: ErrorPoint[]): string {
+  if (points.length === 0) return '';
+  if (points.every((p) => p.overPp > p.underPp)) {
+    return 'The range reaches further below the projection than above it because, in the back-test, the model left too much gas in storage from every start date.';
+  }
+  if (points.every((p) => p.underPp > p.overPp)) {
+    return 'The range reaches further above the projection than below it because, in the back-test, the model left too little gas in storage from every start date.';
+  }
+  return 'Each side of the range follows the back-test errors in that direction.';
 }
 
 /**
@@ -260,5 +305,18 @@ export function biasNote(points: ErrorPoint[], winter: string): string {
   if (Math.abs(p.errorPp) < 0.05) return `In the ${winter} back-test the model matched actual 31 March storage.`;
   const dir = p.errorPp > 0 ? 'under-predicted withdrawals' : 'over-predicted withdrawals';
   const left = p.errorPp > 0 ? 'too much' : 'too little';
-  return `The model ${dir} last winter (${winter}): run from 1 October, it left ${Math.abs(p.errorPp).toFixed(1)} points ${left} gas in storage at 31 March. The range is not bias-corrected.`;
+  return `The model ${dir} last winter (${winter}): run from 1 October, it left ${Math.abs(p.errorPp).toFixed(1)} points ${left} gas in storage at 31 March. The projection is not bias-corrected.`;
+}
+
+// ------------------------------------------------------------------ deliverability
+
+/** Indicative fill level (% full) below which EU withdrawal capacity falls sharply. Owner assumption; see /methodology. */
+export const DELIVERABILITY_PCT = 20;
+
+export const DELIVERABILITY_NOTE =
+  'Below about 20% full, withdrawal capacity falls sharply. A result here signals a supply shortfall that prices would need to resolve (demand reduction or higher LNG imports), not a physically achievable storage level.';
+
+/** True when a projected level is in or below the deliverability constraint zone. */
+export function inDeliverabilityZone(fullPct: number): boolean {
+  return fullPct <= DELIVERABILITY_PCT;
 }

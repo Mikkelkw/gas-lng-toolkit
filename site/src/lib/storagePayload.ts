@@ -5,6 +5,7 @@
 import {
   addDays,
   backtestErrors,
+  asymmetryNote,
   biasNote,
   completeWinters,
   meanOfLast,
@@ -42,6 +43,7 @@ export interface ModelFile {
   dailyDemandTwh: number;
   presets: (Scenario & { id: string; label: string })[];
   backtest?: { winter: string; cases: BacktestCase[] };
+  fit?: { rmseTwh: number };
 }
 
 export interface StatusFile {
@@ -77,6 +79,10 @@ export interface StoragePayload {
   errors: ErrorPoint[];
   /** One line on last winter's back-test bias. */
   biasNote: string;
+  /** One sentence on why the range is asymmetric. */
+  asymmetryNote: string;
+  /** Model fit RMSE as pp of working gas volume per sqrt(day): the floor for each side of the range. */
+  noisePp: number;
 }
 
 const RANGE_WINTERS = 5;
@@ -135,6 +141,8 @@ export function buildStoragePayload(
     staleNote: failed ? `The latest data refresh did not complete. Showing the last good data, gas day ${asOf}.` : null,
     errors,
     biasNote: bt ? biasNote(errors, bt.winter) : '',
+    asymmetryNote: asymmetryNote(errors),
+    noisePp: model.fit?.rmseTwh ? (100 * model.fit.rmseTwh) / storage.workingGasVolumeTwh : 0,
   };
 }
 

@@ -1,7 +1,8 @@
 /** Site identity and per-page SEO metadata. One source for layout, nav and sitemap. */
 
-export const SITE_NAME = 'LNG Flow Tools';
-export const SITE_URL = 'https://gas-lng-toolkit.pages.dev';
+export const SITE_NAME = 'LNG Toolkit';
+/** Canonical origin. *.pages.dev and www redirect here (functions/_middleware.ts). */
+export const SITE_URL = 'https://lngtoolkit.com';
 export const AUTHOR = 'Mikkel Wahl';
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/mikkelwahl/';
 export const GITHUB_URL = 'https://github.com/Mikkelkw/gas-lng-toolkit';
@@ -26,7 +27,7 @@ export const PAGES = {
     path: '/lng-netback-calculator/',
     title: 'LNG Netback & Arbitrage Calculator: US Gulf to Europe and Asia',
     description:
-      'Compare FOB netbacks for a US Gulf LNG cargo to Europe (TTF) and Asia (JKM) via Panama, Suez or the Cape. See the JKM TTF arb and its breakeven.',
+      'Compare FOB netbacks for a US Gulf LNG cargo to Europe (TTF) and Asia (JKM) via Panama, Suez or the Cape. See the JKM-TTF arb and its breakeven.',
     nav: 'LNG netback',
     priority: 0.9,
   },
@@ -58,7 +59,7 @@ export const PAGES = {
     path: '/about/',
     title: `About | ${SITE_NAME}`,
     description:
-      'Who built LNG Flow Tools and why: a free, non-commercial project by Mikkel Wahl with open code and public data sources.',
+      'Who built LNG Toolkit and why: a free, non-commercial project by Mikkel Wahl with open code and public data sources.',
     nav: 'About',
     priority: 0.4,
   },
@@ -66,7 +67,7 @@ export const PAGES = {
 
 export const NAV: PageMeta[] = [PAGES.netback, PAGES.storage, PAGES.learn, PAGES.methodology, PAGES.about];
 
-/** Old paths and where they now live (served as 301s via public/_redirects). */
+/** Old paths and where they now live. Served as 301s by functions/_middleware.ts (public/_redirects is the fallback when Functions do not run). */
 export const REDIRECTS: [string, string][] = [
   ['/netback', PAGES.netback.path],
   ['/storage', PAGES.storage.path],

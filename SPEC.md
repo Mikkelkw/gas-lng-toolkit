@@ -1,4 +1,4 @@
-# SPEC: LNG Flow Tools
+# SPEC: LNG Toolkit
 
 ## 1. Purpose
 
@@ -10,8 +10,8 @@ Success means: a trader or analyst can open a tool, change an assumption, and un
 
 | Decision | Default |
 |---|---|
-| Site name | LNG Flow Tools (renamed from "Gas & LNG Toolkit" in phase 9) |
-| Domain | none at first (use the free *.pages.dev URL); add custom domain later |
+| Site name | LNG Toolkit (was "LNG Flow Tools" from phase 9 to section 11.3) |
+| Domain | lngtoolkit.com (from section 11.3). *.pages.dev and www 301 to it |
 | Author line | Built by Mikkel Wahl |
 | LinkedIn URL | https://www.linkedin.com/in/mikkelwahl/ |
 | GitHub repo | public, name `gas-lng-toolkit` |

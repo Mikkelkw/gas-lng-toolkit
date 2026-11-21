@@ -5,7 +5,7 @@ import { netbackFigure, projectionFigure, storageFigure } from './home';
 import { computeNetbacks, type NetbackInputs } from './netback';
 import { project } from './storage';
 import { buildStoragePayload, type ModelFile, type StorageFile, type WeatherFile } from './storagePayload';
-import { addDays, daysBetween, likelyRange, uncertaintyPp } from './storage';
+import { addDays, daysBetween, inDeliverabilityZone, likelyRange, uncertaintyBand } from './storage';
 
 function storageFile(asOf: string): StorageFile {
   const days: string[] = [];
@@ -63,9 +63,10 @@ describe('landing page live figures', () => {
       forecast: p.forecast, recentLng: p.recentLng, dailyDemand: p.dailyDemand,
       scenario: { tempDelta: 0, lngPct: 0, disruptionTwh: 0, disruptionStart: null, disruptionDays: null, demandResponsePct: 0 },
     }).at(-1)!;
-    const r = likelyRange(end.full, uncertaintyPp(p.errors, daysBetween(p.asOf, p.endDay)));
+    const r = likelyRange(end.full, uncertaintyBand(p.errors, daysBetween(p.asOf, p.endDay), p.noisePp));
+    const zone = inDeliverabilityZone(end.full) ? ' At or below 20% full, withdrawal capacity is constrained.' : '';
     expect(f.value).toBe(`${end.full.toFixed(1)}% full`);
-    expect(f.detail).toBe(`Normal weather, likely range ${r.low.toFixed(1)} to ${r.high.toFixed(1)}%.`);
+    expect(f.detail).toBe(`Normal weather, likely range ${r.low.toFixed(1)} to ${r.high.toFixed(1)}%.${zone}`);
     expect(f.dated).toBe('From gas day 19 Nov 2026');
   });
 

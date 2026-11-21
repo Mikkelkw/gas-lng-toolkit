@@ -16,13 +16,13 @@ describe('page metadata', () => {
     expect(PAGES.netback.title).toBe('LNG Netback & Arbitrage Calculator: US Gulf to Europe and Asia');
     expect(PAGES.storage.title).toBe('EU Gas Storage Forecast: Winter Stress Test to 31 March');
     expect(PAGES.learn.title).toBe('LNG Trading Basics: Netbacks, Arbitrage and European Gas Storage Explained');
-    expect(SITE_NAME).toBe('LNG Flow Tools');
+    expect(SITE_NAME).toBe('LNG Toolkit');
   });
   it('no em-dashes in any title or description (site style)', () => {
     for (const p of pages) expect(p.title + p.description).not.toContain('—');
   });
   it('canonical URLs are absolute with a trailing slash', () => {
-    expect(canonical(PAGES.netback.path)).toBe('https://gas-lng-toolkit.pages.dev/lng-netback-calculator/');
+    expect(canonical(PAGES.netback.path)).toBe('https://lngtoolkit.com/lng-netback-calculator/');
   });
   it('public/_redirects covers every old path with a 301', () => {
     const rules = readFileSync(new URL('../../public/_redirects', import.meta.url), 'utf-8');

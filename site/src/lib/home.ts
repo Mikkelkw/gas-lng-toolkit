@@ -6,7 +6,7 @@ import type { AssumptionItem, InputKey } from './assumptions';
 import { fmtUsd } from './format';
 import { computeNetbacks, type NetbackInputs } from './netback';
 import type { DisplayRoute } from './netbackText';
-import { daysBetween, likelyRange, project, uncertaintyPp, type Scenario } from './storage';
+import { daysBetween, inDeliverabilityZone, likelyRange, project, uncertaintyBand, type Scenario } from './storage';
 import type { StoragePayload } from './storagePayload';
 
 export interface LiveFigure {
@@ -72,8 +72,9 @@ export function projectionFigure(p: StoragePayload | null): LiveFigure {
   });
   const end = path.at(-1);
   if (!end) return { label, value: 'n/a', detail: 'Projection not available.', dated: null };
-  const half = uncertaintyPp(p.errors, daysBetween(p.asOf, p.endDay));
-  const r = likelyRange(end.full, half);
-  const range = half > 0 ? `, likely range ${r.low.toFixed(1)} to ${r.high.toFixed(1)}%` : '';
-  return { label, value: `${end.full.toFixed(1)}% full`, detail: `Normal weather${range}.`, dated: `From gas day ${fmtDay(p.asOf)}` };
+  const band = uncertaintyBand(p.errors, daysBetween(p.asOf, p.endDay), p.noisePp);
+  const r = likelyRange(end.full, band);
+  const range = band.down + band.up > 0 ? `, likely range ${r.low.toFixed(1)} to ${r.high.toFixed(1)}%` : '';
+  const zone = inDeliverabilityZone(end.full) ? ' At or below 20% full, withdrawal capacity is constrained.' : '';
+  return { label, value: `${end.full.toFixed(1)}% full`, detail: `Normal weather${range}.${zone}`, dated: `From gas day ${fmtDay(p.asOf)}` };
 }

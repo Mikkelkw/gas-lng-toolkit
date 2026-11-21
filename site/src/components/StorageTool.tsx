@@ -1,6 +1,18 @@
 /** EU storage winter stress test island. UI only: numbers come from lib/storage. */
 import { useMemo, useState } from 'preact/hooks';
-import { addDays, daysBetween, likelyRange, project, storageHeadline, uncertaintyPp, type PathPoint, type Scenario } from '../lib/storage';
+import {
+  DELIVERABILITY_NOTE,
+  DELIVERABILITY_PCT,
+  addDays,
+  daysBetween,
+  inDeliverabilityZone,
+  likelyRange,
+  project,
+  storageHeadline,
+  uncertaintyBand,
+  type PathPoint,
+  type Scenario,
+} from '../lib/storage';
 import type { StoragePayload } from '../lib/storagePayload';
 import StorageChart, { StorageLegend } from './StorageChart';
 
@@ -75,10 +87,11 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
   const path = useMemo(() => run(sc), [sc, data]);
   const presetRows = useMemo(() => data.presets.map((p) => ({ p, end: run({ ...NORMAL, ...p }).at(-1) })), [data]);
   const end = path.at(-1);
-  // Model uncertainty from the back-test, scaled to the days left. Same width for every scenario.
-  const halfWidth = canProject ? uncertaintyPp(data.errors, daysBetween(data.asOf, data.endDay)) : 0;
-  const hasBand = halfWidth > 0;
-  const rangeOf = (full: number) => likelyRange(full, halfWidth);
+  // Model uncertainty from the signed back-test errors, scaled to the days left. Same band for every scenario.
+  const band = canProject ? uncertaintyBand(data.errors, daysBetween(data.asOf, data.endDay), data.noisePp) : { down: 0, up: 0 };
+  const hasBand = band.down + band.up > 0;
+  const rangeOf = (full: number) => likelyRange(full, band);
+  const lowPresets = presetRows.filter(({ end: e }) => e && inDeliverabilityZone(e.full)).map(({ p }) => p.label);
   const activePreset = data.presets.find(
     (p) =>
       p.tempDelta === sc.tempDelta &&
@@ -108,10 +121,11 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
             </>
           )}
         </p>
+        {end && inDeliverabilityZone(end.full) && <p class="warning">{DELIVERABILITY_NOTE}</p>}
         {end && hasBand && (
           <p class="note-line">
-            Likely range = projection ± {halfWidth.toFixed(1)} points, the back-test error for the same number of days to 31 March.{' '}
-            {data.biasNote}
+            Likely range = projection −{band.down.toFixed(1)} to +{band.up.toFixed(1)} points, from the back-test errors for the same
+            number of days to 31 March. {data.asymmetryNote} {data.biasNote}
           </p>
         )}
         {data.staleNote && <p class="warning">{data.staleNote}</p>}
@@ -151,7 +165,7 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
                       <td>
                         {signed(p.tempDelta, ' °C')}, LNG {signed(p.lngPct, '%', 0)}
                       </td>
-                      <td class="num">{e ? e.full.toFixed(1) : 'n/a'}</td>
+                      <td class={`num${e && inDeliverabilityZone(e.full) ? ' neg' : ''}`}>{e ? e.full.toFixed(1) : 'n/a'}</td>
                       {hasBand && (
                         <td class="num nowrap">
                           {e ? `${rangeOf(e.full).low.toFixed(1)} to ${rangeOf(e.full).high.toFixed(1)}` : 'n/a'}
@@ -167,8 +181,13 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
               Weather: {data.forecastEnd ? `forecast to ${fmtDate(data.forecastEnd)}, then ` : ''}the average of winters{' '}
               {data.normalWinters[0]} to {data.normalWinters[data.normalWinters.length - 1]}, shifted by the scenario. LNG
               baseline: {data.recentLng.toFixed(2)} TWh/d, the last {data.recentLngDays} days' average.
-              {hasBand && ` Likely range: projection ± ${halfWidth.toFixed(1)} points, from the back-test. Not bias-corrected.`}
+              {hasBand && ` Likely range: projection −${band.down.toFixed(1)} to +${band.up.toFixed(1)} points, from the back-test. Not bias-corrected.`}
             </p>
+            {lowPresets.length > 0 && (
+              <p class="chart-source">
+                At or below {DELIVERABILITY_PCT}% full on 31 March, in the deliverability constraint zone: {lowPresets.join(', ')}.
+              </p>
+            )}
           </>
         )}
       </section>

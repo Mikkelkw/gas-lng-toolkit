@@ -1,6 +1,7 @@
 ---
 /** Storage model, back-test and limitations. Used on the tool page and /methodology. */
 import model from '../../../data/model.json';
+import { DELIVERABILITY_PCT, asymmetryNote, backtestErrors, noiseFloorPp } from '../lib/storage';
 
 interface Props {
   id?: string;
@@ -8,6 +9,12 @@ interface Props {
 }
 const { id = 'how', heading = 'How the projection works' } = Astro.props;
 const bt = model.backtest;
+const storageFiles = import.meta.glob<{ workingGasVolumeTwh: number }>('../../public/data/storage.json', { eager: true, import: 'default' });
+const wgv = Object.values(storageFiles)[0]?.workingGasVolumeTwh ?? 0;
+const errors = backtestErrors(bt.cases, `${Number(bt.winter.slice(0, 4)) + 1}-03-31`);
+const longest = errors[errors.length - 1];
+const noisePp = wgv ? (100 * model.fit.rmseTwh) / wgv : 0;
+const floorOct = longest ? noiseFloorPp(noisePp, longest.daysLeft) : 0;
 const f2 = (v: number) => v.toFixed(2);
 const sign = (v: number, d = 1) => (v > 0 ? `+${v.toFixed(d)}` : v < 0 ? `−${Math.abs(v).toFixed(d)}` : v.toFixed(d));
 const fmtDate = (iso: string) =>
@@ -63,17 +70,39 @@ const fmtDate = (iso: string) =>
   </p>
   <h3>Likely range</h3>
   <p>
-    The headline and the preset table show a likely range of projection ± the back-test error, in percentage points of
-    working gas volume. For each back-test start date the larger of the two errors (actual or normal weather) is used.
-    The width grows linearly with the days left to 31 March, from zero on 31 March to {Math.max(...bt.cases.map((c) => Math.max(Math.abs(c.actualWeather.errorPp), Math.abs(c.normalWeather.errorPp)))).toFixed(1)} points
-    from 1 October. The range is symmetric: the projection is not bias-corrected, so the low bias seen in {bt.winter} is
-    stated, not adjusted for. It rests on one winter's back-test and is a guide, not a confidence interval.
+    The headline and the preset table show a likely range around the projection, in percentage points of working gas
+    volume. It uses the signed back-test errors from both runs (actual and normal weather). The room below the projection
+    is the largest amount by which the model over-predicted storage; the room above is the largest amount by which it
+    under-predicted. Each side grows linearly with the days left to 31 March, from zero on 31 March.
+    {longest && <> From 1 October that is {Math.max(longest.overPp, floorOct).toFixed(1)} points below and {Math.max(longest.underPp, floorOct).toFixed(1)} points above.</>}
+  </p>
+  <p>
+    {asymmetryNote(errors)} A side the back-test never missed on still gets the model's day-to-day error carried to 31 March
+    (root mean square error {f2(model.fit.rmseTwh)} TWh/d × √days, as a share of working gas volume), so it is not zero. That
+    floor treats daily errors as independent and so understates them.
+  </p>
+  <p>
+    The projection itself is not moved: no bias correction. The range rests on one winter's back-test and is a guide, not a
+    confidence interval.
+  </p>
+
+  <h3 id="deliverability">Deliverability constraint</h3>
+  <p>
+    Storage cannot be emptied at a steady rate. As a reservoir empties, its pressure falls and so does the rate at which gas
+    can be withdrawn (<a href="https://www.eia.gov/naturalgas/storage/basics/">EIA, The Basics of Underground Natural Gas Storage</a>).
+    The chart shades the zone below {DELIVERABILITY_PCT}% full, an indicative threshold set for this site, not a measured
+    EU-wide curve. Sites differ: salt caverns hold their rate far better than depleted fields and aquifers.
+  </p>
+  <p>
+    The model has no withdrawal capacity limit, so it can project levels in this zone. A result here does not mean storage
+    will reach that level. It signals a supply shortfall that prices would need to resolve, through demand reduction or
+    higher LNG imports.
   </p>
 
   <h3>Limitations</h3>
   <ul>
     <li>No price response: high prices that cut demand or attract LNG are only captured through the scenario sliders.</li>
-    <li>No withdrawal capacity limit as storage empties.</li>
+    <li>No withdrawal capacity limit as storage empties. The shaded zone below {DELIVERABILITY_PCT}% full flags where this matters.</li>
     <li>Pipeline imports are not modelled separately; they sit in the intercept.</li>
     <li>EU aggregate only. Country storage can diverge sharply.</li>
   </ul>

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Project: LNG Flow Tools (repo `gas-lng-toolkit`), a free public site with two tools (US LNG netback calculator, EU storage winter stress test). Full requirements in `SPEC.md`. Read it fully before starting any task.
+Project: LNG Toolkit (repo `gas-lng-toolkit`, domain lngtoolkit.com), a free public site with two tools (US LNG netback calculator, EU storage winter stress test). Full requirements in `SPEC.md`. Read it fully before starting any task.
 
 ## How to work
 

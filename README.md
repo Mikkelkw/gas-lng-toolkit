@@ -1,6 +1,6 @@
-# LNG Flow Tools
+# LNG Toolkit
 
-Live: https://gas-lng-toolkit.pages.dev/
+Live: https://lngtoolkit.com/
 
 A free, public site with two tools for gas and LNG market participants:
 
@@ -30,3 +30,9 @@ The hero map uses Natural Earth 1:110m land (public domain, via the `world-atlas
 `site/public/map/land.svg` and `site/src/data/route-map.json`; both are committed, so a normal build does not need it.
 
 Built by Mikkel Wahl. Not investment advice.
+
+## Hosting
+
+Cloudflare Pages, project `gas-lng-toolkit`, custom domain `lngtoolkit.com`. `site/functions/_middleware.ts` 301s every
+`*.pages.dev` host and `www.lngtoolkit.com` to `https://lngtoolkit.com`, keeping path and query string (rules in
+`site/src/lib/redirects.ts`).

@@ -11,7 +11,7 @@ const toc = [
   ['option', 'Why is a US LNG contract like an option?'],
   ['netback', 'What is an LNG netback?'],
   ['shipping', 'What drives LNG shipping cost?'],
-  ['spread', 'Why does the JKM TTF spread trade around freight?'],
+  ['spread', 'Why does the JKM-TTF spread trade around freight?'],
   ['storage', 'How does European gas storage work?'],
   ['stress', 'How do you stress test gas storage?'],
   ['connects', 'How it all connects'],
@@ -142,7 +142,7 @@ const toc = [
     </ul>
     <p class="try"><a href={netback}>Try it in the netback calculator</a>: move the charter rate and watch the arb.</p>
 
-    <h2 id="spread">6. Why does the JKM TTF spread trade around freight?</h2>
+    <h2 id="spread">6. Why does the JKM-TTF spread trade around freight?</h2>
     <p>
       US LNG is the world's main source of flexible supply. Each cargo can go to Europe or Asia, so traders send it to
       whichever pays the higher netback. If JKM rises far enough above TTF to cover the extra shipping to Asia, cargoes
@@ -173,6 +173,13 @@ const toc = [
       <strong>summer-winter spread</strong>, the price of winter gas minus summer gas, pays storage owners to inject.
       When it is narrow or negative, filling storage loses money without policy support.
     </p>
+    <p>
+      Storage also gets slower as it empties. Withdrawal relies on reservoir pressure, and pressure falls as gas comes out,
+      so the daily rate a site can deliver drops late in winter
+      (<a href="https://www.eia.gov/naturalgas/storage/basics/">EIA</a>). This site treats about 20% full as the point where
+      EU withdrawal capacity falls sharply. A projection that ends below it does not describe a level storage can actually
+      reach. It signals a shortfall that prices would have to close, by cutting demand or drawing in more LNG.
+    </p>
 
     <h2 id="stress">8. How do you stress test gas storage?</h2>
     <p>
@@ -191,7 +198,7 @@ const toc = [
     <p>
       The pieces form one loop. A cold European winter draws storage down faster. Low storage raises the risk of
       shortage, so TTF rises. A higher TTF makes Europe the better netback, so flexible US cargoes that would have gone
-      to Asia turn to Europe. Asian buyers must then pay more to keep cargoes, so JKM follows. The JKM TTF spread moves
+      to Asia turn to Europe. Asian buyers must then pay more to keep cargoes, so JKM follows. The JKM-TTF spread moves
       to whatever level redirects enough ships.
     </p>
     <p>

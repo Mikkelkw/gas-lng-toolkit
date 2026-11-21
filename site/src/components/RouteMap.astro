@@ -8,10 +8,14 @@ import map from '../data/route-map.json';
 
 const COLOR = { ttf: '#2A9D8F', jkm: '#C8A24A' } as const;
 const DELAY: Record<string, number> = { nwe: 0, 'asia-panama': 0.35, 'asia-suez': 0.7, 'asia-cape': 1.05 };
-const label = 'Map of the four LNG routes from Sabine Pass on the US Gulf Coast: direct to Rotterdam, and to Tokyo via the Panama Canal, the Suez Canal and the Cape of Good Hope.';
+const title = 'LNG routes from the US Gulf Coast to Europe and North Asia';
+const desc =
+  'World map with four shipping routes from Sabine Pass, Louisiana: direct across the Atlantic to Rotterdam, and to Tokyo via the Panama Canal and the Pacific, via the Suez Canal and the Indian Ocean, and via the Cape of Good Hope.';
 ---
 <figure class="route-map">
-  <svg viewBox={`0 0 ${map.width} ${map.height}`} role="img" aria-label={label} preserveAspectRatio="xMidYMid meet">
+  <svg viewBox={`0 0 ${map.width} ${map.height}`} role="img" aria-labelledby="route-map-title" aria-describedby="route-map-desc" preserveAspectRatio="xMidYMid meet">
+    <title id="route-map-title">{title}</title>
+    <desc id="route-map-desc">{desc}</desc>
     <image href="/map/land.svg" x="0" y="0" width={map.width} height={map.height} />
     <path d={map.graticule} class="grat" />
     <defs>
@@ -24,15 +28,11 @@ const label = 'Map of the four LNG routes from Sabine Pass on the US Gulf Coast:
     {map.routes.map((r) => (
       <path d={r.d} class="route" stroke={COLOR[r.market as 'ttf' | 'jkm']} mask={`url(#m-${r.id})`} />
     ))}
-    {map.via.map((v) => (
-      <text x={v.x + v.dx} y={v.y + v.dy} text-anchor={v.anchor} class="map-label via">{v.label}</text>
-    ))}
-    {map.ports.map((p) => (
-      <g>
-        <circle cx={p.x} cy={p.y} r="3.2" class="port" />
-        <text x={p.x + p.dx} y={p.y + p.dy} text-anchor={p.anchor} class="map-label">{p.label}</text>
-      </g>
-    ))}
+    <g aria-hidden="true">
+      {map.ports.map((p) => <circle cx={p.x} cy={p.y} r="3.2" class="port" />)}
+    </g>
+    {/* Place names are drawn in a static image, so they are neither page text nor read out one by one. */}
+    <image href="/map/labels.svg" x="0" y="0" width={map.width} height={map.height} class="map-labels" aria-hidden="true" />
   </svg>
   <figcaption>
     <ul class="map-key">
@@ -60,11 +60,9 @@ const label = 'Map of the four LNG routes from Sabine Pass on the US Gulf Coast:
     to { stroke-dashoffset: 0; }
   }
   .port { fill: #f4f1ea; stroke: #0b1f33; stroke-width: 1.2; }
-  .map-label { font-family: var(--sans); font-size: 8.5px; fill: #f4f1ea; paint-order: stroke; stroke: #0b1f33; stroke-width: 2.5px; stroke-linejoin: round; }
-  .map-label.via { fill: #b8c4d0; font-size: 7.5px; font-style: italic; }
   /* On phones the map is too small for legible labels; the key below names every route and port. */
   @media (max-width: 600px) {
-    .map-label { display: none; }
+    .map-labels { display: none; }
   }
   figcaption { margin-top: 10px; font-size: 0.85rem; color: var(--on-dark-muted); }
   .map-key { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; color: var(--on-dark); }

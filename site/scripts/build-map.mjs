@@ -138,6 +138,22 @@ writeFileSync(landFile, landSvg);
 console.log(`Wrote ${landFile}: ${(landSvg.length / 1024).toFixed(1)} KB`);
 delete out.land;
 
+// Labels go to a static SVG too, so they are not page text: the map's <title> and <desc> carry the meaning.
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const FONT = "font-family=\"Inter, 'Segoe UI', system-ui, sans-serif\"";
+const halo = 'paint-order="stroke" stroke="#0B1F33" stroke-width="2.5" stroke-linejoin="round"';
+const labelText = [
+  ...out.via.map((v) => `<text x="${r1(v.x + v.dx)}" y="${r1(v.y + v.dy)}" text-anchor="${v.anchor}" font-size="7.5" font-style="italic" fill="#B8C4D0" ${halo}>${esc(v.label)}</text>`),
+  ...out.ports.map((p) => `<text x="${r1(p.x + p.dx)}" y="${r1(p.y + p.dy)}" text-anchor="${p.anchor}" font-size="8.5" fill="#F4F1EA" ${halo}>${esc(p.label)}</text>`),
+].join('');
+const labelsSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${out.width} ${out.height}" ${FONT}>${labelText}</svg>
+`;
+const labelsFile = resolve(here, '..', 'public', 'map', 'labels.svg');
+writeFileSync(labelsFile, labelsSvg);
+console.log(`Wrote ${labelsFile}: ${(labelsSvg.length / 1024).toFixed(1)} KB`);
+delete out.via;
+out.ports = out.ports.map(({ id, x, y }) => ({ id, x, y }));
+
 const file = resolve(here, '..', 'src', 'data', 'route-map.json');
 mkdirSync(dirname(file), { recursive: true });
 writeFileSync(file, `${JSON.stringify(out)}\n`);

@@ -110,3 +110,11 @@
 - Tests: Vitest 80 passed (6 new for the live figures), pytest 56 passed, astro check clean.
 - Lighthouse mobile, local build: home 100/100/100/100; netback 98/100/100/100; storage 99/100/100/100; primer, methodology and about 100 in all four.
 - All pages checked at 390 px and 1280 px: no horizontal scroll, no console errors.
+
+### v1.1 section 11.3 and owner follow-ups (21 Nov 2026)
+- 11.3: canonical domain lngtoolkit.com; renamed to LNG Toolkit (site, titles, header, about, README, SPEC.md, CLAUDE.md); Pages Functions middleware 301s *.pages.dev and www to the apex with path and query string, and handles the old tool paths. Verified on a preview deploy first.
+- Storage: shaded deliverability constraint zone below 20% full, note when a projection ends there, presets in the zone listed; explained on /methodology (shared method section) and in the primer.
+- Storage: likely range now asymmetric from signed back-test errors (today −2.7 / +1.4 points), with a one-sentence reason.
+- Landing map: SVG title and description; place names moved to a static image so they are not page text.
+- Netback intro: "JKM-TTF spread".
+- Tests: Vitest 88 passed, pytest 56 passed, astro check clean. Lighthouse mobile (local): 97 to 100 in all categories on the changed pages.

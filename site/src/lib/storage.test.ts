@@ -1,19 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import model from '../../../data/model.json';
 import {
+  DELIVERABILITY_NOTE,
+  DELIVERABILITY_PCT,
   addDays,
+  asymmetryNote,
   backtestErrors,
   biasNote,
   completeWinters,
   daysBetween,
   hdd,
+  inDeliverabilityZone,
   likelyRange,
   meanOfLast,
+  noiseFloorPp,
   normalHdd,
   project,
   seasonIndex,
   storageHeadline,
-  uncertaintyPp,
+  uncertaintyBand,
   winterDays,
   winterLabel,
   winterOf,
@@ -80,7 +85,7 @@ describe('helpers', () => {
   });
   it('headline with a likely range keeps the SPEC wording first', () => {
     const end = { day: '2027-03-31', storage: 401.6, full: 35.46, withdrawal: 0, hdd: 0 };
-    const h = storageHeadline(end, '2027-03-31', likelyRange(35.46, 2.5));
+    const h = storageHeadline(end, '2027-03-31', likelyRange(35.46, { down: 2.5, up: 2.5 }));
     expect(h).toBe('Projected 31 March storage: 35.5% (402 TWh) under this scenario, likely range 33.0 to 38.0%');
   });
 });
@@ -93,47 +98,88 @@ describe('model uncertainty from the back-test', () => {
   ];
   const pts = backtestErrors(cases, '2026-03-31');
 
-  it('one point per case, by days left, larger error of the two runs with its sign', () => {
+  it('one point per case, by days left, keeping signed errors from both runs', () => {
     expect(pts).toEqual([
-      { daysLeft: 90, errorPp: 1.5 },
-      { daysLeft: 151, errorPp: 3.3 },
-      { daysLeft: 182, errorPp: 5.5 },
+      { daysLeft: 90, errorPp: 1.5, overPp: 1.5, underPp: 0.9 },
+      { daysLeft: 151, errorPp: 3.3, overPp: 3.3, underPp: 0 },
+      { daysLeft: 182, errorPp: 5.5, overPp: 5.5, underPp: 0 },
     ]);
   });
 
-  it('half-width is zero at 31 March, linear between points, flat beyond the longest horizon', () => {
-    expect(uncertaintyPp(pts, 0)).toBe(0);
-    expect(uncertaintyPp(pts, 45)).toBeCloseTo(0.75, 10);
-    expect(uncertaintyPp(pts, 90)).toBeCloseTo(1.5, 10);
-    expect(uncertaintyPp(pts, 120.5)).toBeCloseTo(2.4, 10);
-    expect(uncertaintyPp(pts, 182)).toBeCloseTo(5.5, 10);
-    expect(uncertaintyPp(pts, 250)).toBeCloseTo(5.5, 10);
-    expect(uncertaintyPp([], 100)).toBe(0);
+  it('band is asymmetric: room below follows over-prediction, room above follows under-prediction', () => {
+    const b = uncertaintyBand(pts, 45);
+    expect(b.down).toBeCloseTo(0.75, 10);
+    expect(b.up).toBeCloseTo(0.45, 10);
+    expect(uncertaintyBand(pts, 120.5).down).toBeCloseTo(2.4, 10);
+    expect(uncertaintyBand(pts, 120.5).up).toBeCloseTo(0.45, 10);
+    expect(uncertaintyBand(pts, 250)).toEqual({ down: 5.5, up: 0 });
+    expect(uncertaintyBand(pts, 0)).toEqual({ down: 0, up: 0 });
+    expect(uncertaintyBand([], 100)).toEqual({ down: 0, up: 0 });
   });
 
-  it('uses absolute errors, so a negative error still widens the band', () => {
-    expect(uncertaintyPp([{ daysLeft: 100, errorPp: -2 }], 50)).toBeCloseTo(1, 10);
+  it('each side is at least the day-to-day fit error carried to 31 March', () => {
+    expect(noiseFloorPp(0.12, 100)).toBeCloseTo(1.2, 10);
+    expect(noiseFloorPp(0.12, 0)).toBe(0);
+    const b = uncertaintyBand(pts, 182, 0.12);
+    expect(b.down).toBeCloseTo(5.5, 10);
+    expect(b.up).toBeCloseTo(0.12 * Math.sqrt(182), 10);
   });
 
-  it('range is symmetric (no bias correction) and kept within 0 to 100%', () => {
-    expect(likelyRange(19.6, 2.2)).toEqual({ low: 19.6 - 2.2, high: 19.6 + 2.2 });
-    expect(likelyRange(1.0, 2.5).low).toBe(0);
-    expect(likelyRange(99, 2.5).high).toBe(100);
+  it('range is not bias-corrected and stays within 0 to 100%', () => {
+    expect(likelyRange(19.6, { down: 2.7, up: 1.4 })).toEqual({ low: 19.6 - 2.7, high: 19.6 + 1.4 });
+    expect(likelyRange(1.0, { down: 2.5, up: 1 }).low).toBe(0);
+    expect(likelyRange(99, { down: 1, up: 2.5 }).high).toBe(100);
+  });
+
+  it('asymmetry note follows the sign of the back-test errors', () => {
+    const over = backtestErrors(cases.slice(0, 2), '2026-03-31');
+    expect(asymmetryNote(over)).toContain('further below the projection');
+    const under = backtestErrors(
+      [{ start: '2025-10-01', actualWeather: { errorPp: -2 }, normalWeather: { errorPp: -3 } }],
+      '2026-03-31',
+    );
+    expect(asymmetryNote(under)).toContain('further above the projection');
+    expect(asymmetryNote(pts)).toContain('further below the projection');
+    const mixed = backtestErrors(
+      [cases[0], { start: '2026-01-01', actualWeather: { errorPp: -2 }, normalWeather: { errorPp: 0.5 } }],
+      '2026-03-31',
+    );
+    expect(asymmetryNote(mixed)).toBe('Each side of the range follows the back-test errors in that direction.');
+    expect(asymmetryNote([])).toBe('');
   });
 
   it("bias note states the direction and size of last winter's error", () => {
     expect(biasNote(pts, '2025/26')).toBe(
-      'The model under-predicted withdrawals last winter (2025/26): run from 1 October, it left 5.5 points too much gas in storage at 31 March. The range is not bias-corrected.',
+      'The model under-predicted withdrawals last winter (2025/26): run from 1 October, it left 5.5 points too much gas in storage at 31 March. The projection is not bias-corrected.',
     );
-    expect(biasNote([{ daysLeft: 182, errorPp: -3 }], '2025/26')).toContain('over-predicted withdrawals');
+    expect(biasNote([{ daysLeft: 182, errorPp: -3, overPp: 0, underPp: 3 }], '2025/26')).toContain('over-predicted withdrawals');
     expect(biasNote([], '2025/26')).toBe('');
-    expect(biasNote(pts, '2025/26')).not.toContain('—');
   });
 
-  it('runs on the real back-test in model.json', () => {
+  it('runs on the real back-test in model.json: more room below than above', () => {
     const real = backtestErrors(model.backtest.cases, `${Number(model.backtest.winter.slice(0, 4)) + 1}-03-31`);
     expect(real.length).toBeGreaterThan(0);
-    expect(uncertaintyPp(real, 132)).toBeGreaterThan(0);
+    const b = uncertaintyBand(real, 132, (100 * model.fit.rmseTwh) / 1132);
+    expect(b.down).toBeGreaterThan(b.up);
+    expect(b.up).toBeGreaterThan(0);
+  });
+
+  it('no em-dashes in the explanatory text', () => {
+    for (const s of [asymmetryNote(pts), biasNote(pts, '2025/26'), DELIVERABILITY_NOTE]) expect(s).not.toContain('—');
+  });
+});
+
+describe('deliverability constraint', () => {
+  it('zone is at or below 20% full', () => {
+    expect(DELIVERABILITY_PCT).toBe(20);
+    expect(inDeliverabilityZone(19.6)).toBe(true);
+    expect(inDeliverabilityZone(20)).toBe(true);
+    expect(inDeliverabilityZone(20.1)).toBe(false);
+  });
+  it('note uses the agreed wording', () => {
+    expect(DELIVERABILITY_NOTE).toBe(
+      'Below about 20% full, withdrawal capacity falls sharply. A result here signals a supply shortfall that prices would need to resolve (demand reduction or higher LNG imports), not a physically achievable storage level.',
+    );
   });
 });
 

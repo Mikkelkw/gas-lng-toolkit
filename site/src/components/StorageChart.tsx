@@ -1,6 +1,6 @@
 /** Storage % full chart: this winter, scenario projection, previous winters' range and average. */
 import * as Plot from '@observablehq/plot';
-import type { PathPoint, RangePoint } from '../lib/storage';
+import { DELIVERABILITY_PCT, type PathPoint, type RangePoint } from '../lib/storage';
 import { COLORS, PLOT_STYLE } from './NetbackCharts';
 import PlotFigure from './PlotFigure';
 
@@ -8,6 +8,9 @@ import PlotFigure from './PlotFigure';
 const BAND = COLORS.ocean;
 const BAND_OPACITY = 0.14;
 const AVG = COLORS.ocean;
+/** Deliverability constraint zone: a faint signal-red wash below 20% full, with a dashed edge. */
+const ZONE = '#C0392B';
+const ZONE_OPACITY = 0.08;
 
 const toDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const fmtDay = (iso: string) => toDate(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -35,7 +38,7 @@ export default function StorageChart({ actual, projection, range, rangeLabel }: 
       deps={[actual, projection, range]}
       ariaLabel={`EU gas storage, % full. Latest actual ${last ? last.full.toFixed(1) : 'n/a'}%. ${
         end ? `Projected ${end.full.toFixed(1)}% on 31 March.` : ''
-      } Range and average of winters ${rangeLabel}.`}
+      } Range and average of winters ${rangeLabel}. Shaded below ${DELIVERABILITY_PCT}% full: deliverability constraint zone.`}
       render={(width) =>
         Plot.plot({
           width,
@@ -48,6 +51,29 @@ export default function StorageChart({ actual, projection, range, rangeLabel }: 
           y: { domain: [0, 100], label: '% full', labelAnchor: 'top', grid: true, ticks: 5 },
           marks: [
             Plot.gridY({ stroke: COLORS.grid, strokeOpacity: 1 }),
+            ...(range.length
+              ? [
+                  Plot.rect([{ x1: toDate(range[0].day), x2: toDate(range[range.length - 1].day), y1: 0, y2: DELIVERABILITY_PCT }], {
+                    x1: 'x1',
+                    x2: 'x2',
+                    y1: 'y1',
+                    y2: 'y2',
+                    fill: ZONE,
+                    fillOpacity: ZONE_OPACITY,
+                  }),
+                  Plot.ruleY([DELIVERABILITY_PCT], { stroke: ZONE, strokeOpacity: 0.6, strokeDasharray: '3,3' }),
+                  Plot.text([toDate(range[0].day)], {
+                    x: (d: Date) => d,
+                    y: DELIVERABILITY_PCT,
+                    text: () => 'Deliverability constraint',
+                    textAnchor: 'start',
+                    dx: 6,
+                    dy: 10,
+                    fill: ZONE,
+                    fontSize: 12,
+                  }),
+                ]
+              : []),
             Plot.areaY(range.filter((r) => Number.isFinite(r.min)), {
               x: (r: RangePoint) => toDate(r.day),
               y1: 'min',
@@ -119,6 +145,10 @@ export function StorageLegend({ rangeLabel, showProjection }: { rangeLabel: stri
       <li>
         <svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" stroke={AVG} stroke-width="1.5" stroke-opacity="0.75" /></svg>
         Average {rangeLabel}
+      </li>
+      <li>
+        <svg width="16" height="10" aria-hidden="true"><rect width="16" height="10" rx="2" fill={ZONE} fill-opacity={ZONE_OPACITY * 2} stroke={ZONE} stroke-opacity="0.6" stroke-dasharray="3,3" /></svg>
+        Below {DELIVERABILITY_PCT}%: deliverability constraint
       </li>
       <li>
         <svg width="16" height="10" aria-hidden="true"><rect width="16" height="10" rx="2" fill={BAND} fill-opacity={BAND_OPACITY} /></svg>
