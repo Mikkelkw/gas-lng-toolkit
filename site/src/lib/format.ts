@@ -15,3 +15,9 @@ export function fmtSigned(value: number, decimals = 2): string {
   const s = fmt(value, decimals);
   return value > 0 && s !== fmt(0, decimals) ? `+${s}` : s;
 }
+
+/** Dollar amount with the sign before the symbol: "$1.09", "\u2212$1.09". */
+export function fmtUsd(value: number, decimals = 2): string {
+  const s = fmt(value, decimals);
+  return s.startsWith('\u2212') ? `\u2212$${s.slice(1)}` : `$${s}`;
+}

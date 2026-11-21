@@ -5,7 +5,7 @@
 | 1. Scaffold | done |
 | 2. Assumptions | done |
 | 3. Netback engine | done |
-| 4. Netback page | not started |
+| 4. Netback page | done |
 | 5. Storage pipeline | not started |
 | 6. Storage model | not started |
 | 7. Storage page | not started |
@@ -40,3 +40,11 @@
 - 18 netback tests including a hand-calculated case. Vitest 22 passed, pytest 20 passed.
 - Defaults give: TTF $27.38, NWE netback $26.78, best Asia (Panama) $25.69, arb -$1.09, breakeven JKM $28.11/MMBtu.
 - Note: owner added SEO and rename items to SPEC phase 9 (rename to "LNG Flow Tools", new routes). Picked up in phase 9.
+
+### Phase 4: Netback page
+- Preact island `NetbackTool` with grouped inputs (defaults show "as of" dates), results table, headline, breakeven sentence, margin warning.
+- Charts (Observable Plot): netback by route (best highlighted), arb vs charter rate with current rate and breakeven marked. Tooltips on both.
+- Scenario encoded in the URL (only changed values), "Copy link" and "Reset". Pure modules `fields.ts`, `scenarioUrl.ts`, `netbackText.ts`, `market.ts` with tests.
+- "How this is calculated", simplifications, and a table of every default with its source on the page.
+- Checked rendering at 390px and 1280px with Chrome device emulation: no horizontal scroll, no console errors, no label collisions.
+- Vitest 38 passed.

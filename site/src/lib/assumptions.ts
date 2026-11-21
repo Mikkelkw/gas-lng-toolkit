@@ -18,7 +18,7 @@ export const defaultInputs: NetbackInputs = Object.fromEntries(
   Object.entries(assumptionItems).map(([k, v]) => [k, v.value]),
 ) as unknown as NetbackInputs;
 
-export type SourcedRoute = Route & { source: string };
+export type SourcedRoute = Route & { source: string; shortLabel: string; destination: string; via: string };
 
 export const defaultRoutes: SourcedRoute[] = raw.routes as SourcedRoute[];
 

@@ -17,3 +17,7 @@ One line each: date, decision, reason.
 - 2026-11-21: Cargo MMBtu = full vessel capacity x conversion factor; heel and fill limit ignored. Documented simplification.
 - 2026-11-21: ECB API docs (data.ecb.europa.eu/help) returned HTTP 503 on 2026-11-21. EUR/USD default taken from the ECB reference-rate web page; API endpoint to be confirmed from docs in phase 5.
 - 2026-11-21: Breakeven JKM solved in closed form (netback linear in JKM per route); breakeven charter rate by bisection, valid because the arb falls monotonically with charter rate.
+- 2026-11-21: Netback page reads optional `site/public/data/market.json` at build time for Henry Hub and EUR/USD; falls back to assumptions.json. Newer valid values only.
+- 2026-11-21: URL updates live with replaceState, so the address bar is always the shareable scenario; "Copy link" copies it.
+- 2026-11-21: Breakeven charter rate shown rounded to the nearest $100/day; finer precision would be false precision.
+- 2026-11-21: Site is light-theme only, per SPEC "dark-on-light" visual style.

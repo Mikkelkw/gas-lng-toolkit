@@ -5,28 +5,28 @@
   "inputs": {
     "henryHub": {
       "label": "Henry Hub spot",
-      "value": 3.10,
+      "value": 3.1,
       "unit": "$/MMBtu",
       "asOf": "2026-11-17",
       "source": "EIA, Henry Hub Natural Gas Spot Price (series RNGWHHD), API v2"
     },
     "ttf": {
       "label": "TTF front-month",
-      "value": 85.00,
+      "value": 85.0,
       "unit": "EUR/MWh",
       "asOf": "2026-11-20",
       "source": "Manual. Indicative round level from public press reports of the Dec-26 contract (EUR 85 to 86/MWh). Not a licensed assessment."
     },
     "jkm": {
       "label": "North Asia spot LNG (JKM proxy)",
-      "value": 27.00,
+      "value": 27.0,
       "unit": "$/MMBtu",
       "asOf": "2026-11-20",
       "source": "Manual. Indicative round level from public press reports of the weekly North-east Asia spot LNG average for January delivery ($26.90/MMBtu). Not a licensed assessment."
     },
     "eurusd": {
       "label": "EUR/USD",
-      "value": 1.0990,
+      "value": 1.099,
       "unit": "USD per EUR",
       "asOf": "2026-11-20",
       "source": "ECB euro foreign exchange reference rate"
@@ -106,6 +106,9 @@
     {
       "id": "nwe",
       "label": "NW Europe (TTF), direct",
+      "shortLabel": "NWE direct",
+      "destination": "Northwest Europe",
+      "via": "direct",
       "market": "ttf",
       "canal": null,
       "distanceNm": 5300,
@@ -114,6 +117,9 @@
     {
       "id": "asia-panama",
       "label": "North Asia (JKM) via Panama",
+      "shortLabel": "Asia via Panama",
+      "destination": "North Asia",
+      "via": "Panama",
       "market": "jkm",
       "canal": "panama",
       "distanceNm": 9209,
@@ -122,6 +128,9 @@
     {
       "id": "asia-suez",
       "label": "North Asia (JKM) via Suez",
+      "shortLabel": "Asia via Suez",
+      "destination": "North Asia",
+      "via": "Suez",
       "market": "jkm",
       "canal": "suez",
       "distanceNm": 14521,
@@ -130,6 +139,9 @@
     {
       "id": "asia-cape",
       "label": "North Asia (JKM) via Cape of Good Hope",
+      "shortLabel": "Asia via Cape",
+      "destination": "North Asia",
+      "via": "the Cape of Good Hope",
       "market": "jkm",
       "canal": null,
       "distanceNm": 15689,

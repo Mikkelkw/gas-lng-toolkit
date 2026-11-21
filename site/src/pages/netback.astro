@@ -1,7 +1,78 @@
 ---
 import Base from '../layouts/Base.astro';
+import NetbackTool from '../components/NetbackTool';
+import { assumptionItems, assumptionsVerified, defaultRoutes } from '../lib/assumptions';
+import { overlayMarket, type MarketFile } from '../lib/market';
+import '../styles/tool.css';
+
+// Latest Henry Hub and EUR/USD from the daily pipeline, if present. Falls back to documented defaults.
+const marketFiles = import.meta.glob<MarketFile>('../../public/data/market.json', { eager: true, import: 'default' });
+const market = Object.values(marketFiles)[0] ?? null;
+const items = overlayMarket(assumptionItems, market);
+
+const fmtDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const fmtValue = (v: number) => v.toLocaleString('en-GB', { maximumFractionDigits: 4 });
 ---
-<Base title="US LNG netback calculator">
+<Base
+  title="US LNG netback calculator"
+  description="Compare FOB netbacks for a US Gulf Coast LNG cargo to Europe (TTF) and North Asia (JKM) via Panama, Suez or the Cape. Free, with sources."
+>
   <h1>US LNG netback calculator</h1>
-  <p class="muted">Under construction.</p>
+  <p class="intro">
+    Which destination pays most for a US Gulf Coast cargo, and how far is the Europe to Asia arb from flipping?
+    Change any input below. Results update at once, and the link in your address bar holds your scenario.
+  </p>
+
+  <NetbackTool client:load items={items} routes={defaultRoutes} />
+
+  <section class="method" id="how">
+    <h2>How this is calculated</h2>
+    <p>All prices in $/MMBtu. Formulas run in a tested module (<code>site/src/lib/netback.ts</code>).</p>
+    <ol class="formulas">
+      <li><strong>TTF in $/MMBtu</strong> = TTF (€/MWh) × EUR/USD ÷ 3.412</li>
+      <li><strong>Laden days</strong> = distance (nm) ÷ (speed (knots) × 24). Round trip = 2 × laden days. The ship returns in ballast over the same distance.</li>
+      <li><strong>Loaded MMBtu</strong> = vessel size (m³) × conversion factor (MMBtu/m³)</li>
+      <li><strong>Delivered MMBtu</strong> = loaded MMBtu × (1 − boil-off rate × laden days)</li>
+      <li><strong>Shipping cost</strong> = (charter rate × round-trip days + canal fee × 2 + port costs) ÷ delivered MMBtu</li>
+      <li><strong>Boil-off cost</strong> = loaded MMBtu × boil-off rate × laden days × destination price ÷ delivered MMBtu</li>
+      <li><strong>FOB netback</strong> = destination price − shipping cost − boil-off cost</li>
+      <li><strong>Cost of supply</strong> = feedgas multiplier × Henry Hub + liquefaction fee</li>
+      <li><strong>Margin</strong> = FOB netback − cost of supply</li>
+      <li><strong>Arb</strong> = best Asia netback − Europe netback</li>
+      <li>
+        <strong>Breakeven JKM</strong>: each Asia netback is linear in JKM, so the breakeven is solved exactly. It is the lowest JKM at which any
+        Asia route matches the Europe netback.
+      </li>
+      <li><strong>Breakeven charter rate</strong>: the charter rate at which the arb is zero, found numerically.</li>
+    </ol>
+    <h3>Simplifications</h3>
+    <ul>
+      <li>One charter rate for all routes. In practice Pacific and Atlantic rates differ.</li>
+      <li>Boil-off applies to the laden leg only. Heel and fuel use on the ballast leg are not modelled.</li>
+      <li>The full vessel capacity is loaded. The fill limit (about 98.5%) and heel are ignored.</li>
+      <li>Tokyo Bay is the North Asia reference port. Canal fees average the laden and ballast tolls.</li>
+      <li>Canal waiting times, congestion and Red Sea security costs are not included.</li>
+    </ul>
+
+    <h3 id="assumptions">Default assumptions and sources</h3>
+    <p class="muted">Verified on {fmtDate(assumptionsVerified)}. Henry Hub and EUR/USD refresh daily. Full notes in <a href="https://github.com/Mikkelkw/gas-lng-toolkit/blob/main/data/assumptions_sources.md">assumptions_sources.md</a>.</p>
+    <div class="table-wrap" role="region" aria-label="Default assumptions and sources" tabindex="0">
+      <table class="sources">
+        <thead><tr><th scope="col">Input</th><th scope="col" class="num">Default</th><th scope="col">Unit</th><th scope="col">As of</th><th scope="col">Source</th></tr></thead>
+        <tbody>
+          {Object.values(items).map((it) => (
+            <tr><th scope="row">{it.label}</th><td class="num">{fmtValue(it.value)}</td><td>{it.unit}</td><td class="nowrap">{fmtDate(it.asOf)}</td><td>{it.source}</td></tr>
+          ))}
+          {defaultRoutes.map((r) => (
+            <tr><th scope="row">Distance: {r.shortLabel}</th><td class="num">{fmtValue(r.distanceNm)}</td><td>nm</td><td class="nowrap">{fmtDate(assumptionsVerified)}</td><td>{r.source}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small">
+      TTF and JKM defaults are entered by hand from public press reports and are indicative only. No licensed price assessments are used.
+      Enter your own levels.
+    </p>
+  </section>
 </Base>

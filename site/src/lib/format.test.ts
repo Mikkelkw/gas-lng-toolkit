@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fmt, fmtSigned } from './format';
+import { fmt, fmtSigned, fmtUsd } from './format';
 
 describe('fmt', () => {
   it('formats with fixed decimals and thousands separators', () => {
@@ -21,5 +21,13 @@ describe('fmtSigned', () => {
     expect(fmtSigned(0.5)).toBe('+0.50');
     expect(fmtSigned(-0.5)).toBe('−0.50');
     expect(fmtSigned(0)).toBe('0.00');
+  });
+});
+
+describe('fmtUsd', () => {
+  it('puts the sign before the dollar symbol', () => {
+    expect(fmtUsd(1.094)).toBe('$1.09');
+    expect(fmtUsd(-1.094)).toBe('\u2212$1.09');
+    expect(fmtUsd(35000, 0)).toBe('$35,000');
   });
 });
