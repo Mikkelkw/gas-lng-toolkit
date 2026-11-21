@@ -1,7 +1,62 @@
 ---
 import Base from '../layouts/Base.astro';
+import NetbackMethod from '../components/NetbackMethod.astro';
+import StorageMethod from '../components/StorageMethod.astro';
+import { PAGES } from '../lib/pages';
+import '../styles/tool.css';
+import '../styles/prose.css';
+
+const status = Object.values(import.meta.glob<Record<string, { ok?: boolean; lastSuccess?: string }>>('../../public/data/status.json', { eager: true, import: 'default' }))[0] ?? {};
+const fmt = (iso?: string) => (iso ? new Date(iso).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) + ' UTC' : 'n/a');
+const sources = [
+  ['Henry Hub spot', 'EIA API v2, series RNGWHHD', 'Daily', 'Source: EIA', 'market'],
+  ['EUR/USD', 'ECB euro foreign exchange reference rates', 'Working days', 'Source: ECB', 'market'],
+  ['EU gas storage', 'GIE AGSI+, EU aggregate', 'Daily', 'Source: GIE AGSI+', 'storage'],
+  ['EU LNG send-out', 'GIE ALSI, EU aggregate', 'Daily', 'Source: GIE ALSI', 'storage'],
+  ['Temperatures', 'Open-Meteo forecast and historical APIs, 16 cities', 'Daily', 'Weather data: Open-Meteo (CC BY 4.0)', 'weather'],
+];
 ---
-<Base title="Methodology">
-  <h1>Methodology</h1>
-  <p class="muted">Under construction.</p>
+<Base page="methodology">
+  <div class="prose">
+    <h1>Methodology</h1>
+    <p class="lead">
+      How the two tools work: formulas, default assumptions with their sources, the storage model's fit and back-test,
+      and the limitations. Calculations run in tested code modules, separate from the page code.
+    </p>
+    <nav class="toc" aria-label="Contents">
+      <ol>
+        <li><a href="#data">Data sources and refresh</a></li>
+        <li><a href="#netback">LNG netback calculator</a></li>
+        <li><a href="#storage">EU gas storage forecast</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="data">Data sources and refresh</h2>
+    <p>
+      A scheduled job fetches all data at 07:00 UTC. Each source is checked (freshness, gaps, value ranges) before it
+      replaces the previous file. If a check fails, the last good data stays live with its date.
+    </p>
+  </div>
+  <div class="table-wrap" role="region" aria-label="Data sources" tabindex="0">
+    <table class="sources">
+      <thead><tr><th scope="col">Data</th><th scope="col">Source</th><th scope="col">Frequency</th><th scope="col">Attribution</th><th scope="col">Last successful refresh</th></tr></thead>
+      <tbody>
+        {sources.map(([what, src, freq, attr, key]) => (
+          <tr><th scope="row">{what}</th><td>{src}</td><td>{freq}</td><td>{attr}</td><td class="nowrap">{fmt(status[key]?.lastSuccess)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">
+    Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a>, licensed
+    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. The EU temperature is a gas-demand-weighted
+    average of 16 cities, weighted by Eurostat 2024 inland gas consumption. TTF and JKM are not fetched: no licensed
+    price assessments are used.
+  </p>
+
+  <NetbackMethod id="netback" heading="LNG netback calculator" />
+  <p><a href={PAGES.netback.path}>Open the netback calculator</a></p>
+
+  <StorageMethod id="storage" heading="EU gas storage forecast" />
+  <p><a href={PAGES.storage.path}>Open the storage forecast</a></p>
 </Base>

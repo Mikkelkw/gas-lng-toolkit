@@ -1,0 +1,35 @@
+/* Long-form reading pages: primer, methodology, about. */
+.prose { max-width: 70ch; }
+.prose h1 { font-size: 1.9rem; }
+.prose h2 { margin-top: 2.2rem; font-size: 1.35rem; scroll-margin-top: 12px; }
+.prose h3 { margin-top: 1.6rem; font-size: 1.1rem; }
+.prose p, .prose li, .prose dd { line-height: 1.65; }
+.prose li { margin-bottom: 4px; }
+.lead { font-size: 1.1rem; color: var(--ink); }
+.kicker { margin: 1.25rem 0 0; font-size: 0.875rem; color: var(--muted); }
+.toc { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 16px; margin: 20px 0; }
+.prose .toc-title { font-size: 1rem; margin: 4px 0; }
+.toc ol { margin: 6px 0; padding-left: 1.3rem; }
+.toc li { margin-bottom: 2px; }
+.formula { background: var(--panel); padding: 8px 12px; border-radius: 6px; font-weight: 600; }
+.try { border-left: 3px solid var(--accent); padding-left: 10px; font-size: 0.95rem; }
+.glossary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+.glossary dt { font-weight: 600; }
+.glossary dd { margin: 0; }
+@media (max-width: 480px) {
+  .glossary { grid-template-columns: 1fr; gap: 0; }
+  .glossary dd { margin-bottom: 8px; }
+}
+.prose table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+.prose th, .prose td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.prose .num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; }
+.small { font-size: 0.85rem; }
+.cards { display: grid; gap: 16px; grid-template-columns: 1fr; margin: 24px 0; }
+@media (min-width: 720px) { .cards { grid-template-columns: 1fr 1fr; } }
+.card { display: block; border: 1px solid var(--line); border-radius: 10px; padding: 18px; text-decoration: none; color: var(--ink); background: #fff; }
+.card:hover { border-color: var(--accent); box-shadow: 0 2px 10px rgba(11, 94, 99, 0.12); }
+.card h2 { margin: 0 0 6px; font-size: 1.2rem; color: var(--accent); }
+.card p { margin: 0 0 8px; }
+.card .stat { font-size: 0.9rem; color: var(--muted); }
+.card .go { font-weight: 600; color: var(--accent); }

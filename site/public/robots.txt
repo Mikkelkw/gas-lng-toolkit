@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gas-lng-toolkit.pages.dev/sitemap.xml

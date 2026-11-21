@@ -1,0 +1,5 @@
+# Old tool paths, kept working after the rename (Cloudflare Pages redirects; query strings are kept).
+/netback /lng-netback-calculator/ 301
+/netback/ /lng-netback-calculator/ 301
+/storage /eu-gas-storage-forecast/ 301
+/storage/ /eu-gas-storage-forecast/ 301

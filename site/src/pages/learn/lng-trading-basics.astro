@@ -1,0 +1,235 @@
+---
+import Base from '../../layouts/Base.astro';
+import { PAGES } from '../../lib/pages';
+import '../../styles/prose.css';
+
+const netback = PAGES.netback.path;
+const storage = PAGES.storage.path;
+const toc = [
+  ['markets', 'What are Henry Hub, TTF and JKM?'],
+  ['us-cargo', 'How does a US LNG cargo make money?'],
+  ['option', 'Why is a US LNG contract like an option?'],
+  ['netback', 'What is an LNG netback?'],
+  ['shipping', 'What drives LNG shipping cost?'],
+  ['spread', 'Why does the JKM TTF spread trade around freight?'],
+  ['storage', 'How does European gas storage work?'],
+  ['stress', 'How do you stress test gas storage?'],
+  ['connects', 'How it all connects'],
+  ['glossary', 'Glossary'],
+  ['reading', 'Further reading'],
+];
+---
+<Base page="learn">
+  <article class="prose">
+    <p class="kicker">Primer · about 10 minutes</p>
+    <h1>LNG trading basics: netbacks, arbitrage and European gas storage explained</h1>
+    <p class="lead">
+      This guide is for readers who know finance but are new to gas. It explains how US liquefied natural gas (LNG)
+      reaches Europe and Asia, how traders decide where a cargo goes, and why European storage levels move prices.
+      Numbers marked <em>illustrative</em> are round figures for teaching, not market data.
+    </p>
+
+    <nav class="toc" aria-label="Contents">
+      <h2 class="toc-title">Contents</h2>
+      <ol>{toc.map(([id, t]) => <li><a href={`#${id}`}>{t}</a></li>)}</ol>
+    </nav>
+
+    <h2 id="markets">1. What are Henry Hub, TTF and JKM?</h2>
+    <p>
+      Natural gas trades at three main benchmark prices. <strong>Henry Hub</strong> (HH) is the US price, set at a
+      pipeline hub in Louisiana and quoted in dollars per million British thermal units ($/MMBtu). <strong>TTF</strong>
+      is the main European price, set at the Dutch virtual trading point and quoted in euros per megawatt hour (€/MWh).
+      <strong>JKM</strong> (Japan Korea Marker) is the North-east Asian spot price for LNG, quoted in $/MMBtu.
+    </p>
+    <p>
+      The three prices can sit far apart because gas is hard to move. Pipelines work well over land but cannot cross
+      oceans economically. To ship gas between continents, it is cooled to about −162 °C, where it becomes a liquid
+      with roughly 1/600th of its gas volume. That is LNG.
+    </p>
+    <p>The LNG supply chain has three steps:</p>
+    <ul>
+      <li><strong>Liquefaction</strong>: a plant near the gas field cools the gas and loads it onto a ship.</li>
+      <li><strong>Shipping</strong>: a specialised tanker carries it, often for weeks.</li>
+      <li><strong>Regasification</strong>: an import terminal warms it back to gas and sends it into the local grid.</li>
+    </ul>
+    <p>
+      Two delivery terms matter. <strong>FOB</strong> (free on board) means the buyer takes the cargo at the loading port
+      and pays for shipping. <strong>DES</strong> (delivered ex ship) means the seller delivers to the buyer's terminal and
+      bears the shipping. A trader comparing destinations converts DES prices back to an FOB value. That value is the
+      netback.
+    </p>
+    <p>To compare TTF with $/MMBtu prices: $/MMBtu = €/MWh × EUR/USD ÷ 3.412, since one MWh is 3.412 MMBtu.</p>
+
+    <h2 id="us-cargo">2. How does a US LNG cargo make money?</h2>
+    <p>
+      Most US export plants use a <strong>tolling model</strong>. The buyer pays for the feed gas at a mark-up to Henry
+      Hub, typically 115% of HH, which covers the gas plus fuel used in liquefaction. On top, the buyer pays a fixed
+      <strong>liquefaction fee</strong> per MMBtu. The fee is owed whether or not the buyer lifts the cargo. Contract fees
+      vary; public filings and trade press put recent levels at roughly $2.25 to $3.50/MMBtu.
+    </p>
+    <p>
+      In return the buyer gets <strong>destination flexibility</strong>. Once loaded FOB, the cargo can go wherever it
+      earns most: Europe, Asia, Latin America or elsewhere. This flexibility is what links the three gas prices.
+    </p>
+    <p class="try"><a href={netback}>Try it in the netback calculator</a>: the cost of supply line uses this formula.</p>
+
+    <h2 id="option">3. Why is a US LNG contract like an option?</h2>
+    <p>
+      A US offtake contract behaves like a series of <strong>call options</strong>. Each month the holder can lift a cargo
+      and earn the overseas netback, paying 115% of HH for the gas. The liquefaction fee is the <strong>premium</strong>:
+      paid up front, whatever happens. The payoff is the overseas netback minus 115% of HH, if positive.
+    </p>
+    <p>
+      So the lifting decision ignores the fee, because it is already sunk. An <em>illustrative</em> example: HH is
+      $3.00, so feed gas costs $3.45. If the best netback is $3.20, lifting loses $0.25/MMBtu on top of the fee. The
+      holder cancels the cargo and pays only the fee.
+    </p>
+    <p>
+      This happened at scale in 2020. As COVID-19 cut demand, European and Asian prices fell close to US costs, and
+      buyers cancelled many US cargoes. The US Energy Information Administration estimated about 46 cargoes were
+      cancelled in June 2020 and about 50 in July
+      (<a href="https://www.eia.gov/todayinenergy/detail.php?id=44697">EIA, August 2020</a>).
+    </p>
+
+    <h2 id="netback">4. What is an LNG netback?</h2>
+    <p>
+      A <strong>netback</strong> is the destination price minus the cost of getting the cargo there. It answers: what is
+      this cargo worth at the US loading port if I send it to market X?
+    </p>
+    <p class="formula">FOB netback = destination price − shipping cost − boil-off cost</p>
+    <p>
+      The <strong>arb</strong> (arbitrage) is the difference between the best Asia netback and the Europe netback. When
+      it is positive, Asia pays more after shipping. When it is negative, Europe wins.
+    </p>
+    <p>An <em>illustrative</em> example, all in $/MMBtu:</p>
+    <div class="table-wrap" role="region" aria-label="Illustrative netback example" tabindex="0">
+      <table>
+        <thead><tr><th scope="col">Illustrative</th><th scope="col" class="num">Europe</th><th scope="col" class="num">Asia</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Destination price</th><td class="num">12.00</td><td class="num">12.80</td></tr>
+          <tr><th scope="row">Shipping cost</th><td class="num">0.80</td><td class="num">1.60</td></tr>
+          <tr><th scope="row">Boil-off cost</th><td class="num">0.15</td><td class="num">0.30</td></tr>
+          <tr><th scope="row">FOB netback</th><td class="num"><strong>11.05</strong></td><td class="num"><strong>10.90</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Asia pays $0.80 more at the destination, but the longer voyage costs $0.95 more. Europe wins by $0.15. A higher
+      destination price does not always mean a better destination.
+    </p>
+    <p class="try"><a href={netback}>Try it in the netback calculator</a>: it also shows the JKM level where the arb flips.</p>
+
+    <h2 id="shipping">5. What drives LNG shipping cost?</h2>
+    <ul>
+      <li>
+        <strong>Charter rate</strong>: the daily hire of the ship, in $/day. It swings widely with fleet supply and
+        demand, and is the biggest single driver of freight.
+      </li>
+      <li>
+        <strong>Round trip</strong>: the charterer pays for the voyage out and, usually, the empty (ballast) return. A
+        longer route costs twice over.
+      </li>
+      <li>
+        <strong>Route</strong>: from the US Gulf to Japan via the Panama Canal is the shortest. Suez is longer, and the
+        Cape of Good Hope longer still. Panama can be limited by drought and booking slots. Suez carries security risk
+        in the Red Sea. The Cape avoids both canals but adds days.
+      </li>
+      <li><strong>Canal fees</strong>: charged per transit, so twice per round trip.</li>
+      <li>
+        <strong>Boil-off</strong>: LNG warms slightly in transit and a small share evaporates each day, often used as
+        ship fuel. Modern vessels lose roughly 0.1% of the cargo per day, so a long voyage delivers less gas to sell.
+      </li>
+    </ul>
+    <p class="try"><a href={netback}>Try it in the netback calculator</a>: move the charter rate and watch the arb.</p>
+
+    <h2 id="spread">6. Why does the JKM TTF spread trade around freight?</h2>
+    <p>
+      US LNG is the world's main source of flexible supply. Each cargo can go to Europe or Asia, so traders send it to
+      whichever pays the higher netback. If JKM rises far enough above TTF to cover the extra shipping to Asia, cargoes
+      turn east. Europe then gets fewer cargoes, and TTF rises until the gap closes.
+    </p>
+    <p>
+      This is a <strong>location spread</strong>. Like the spread between two delivery points for any commodity, it
+      tends to trade within a band set by the cost of moving the product between them. For JKM and TTF that band is
+      roughly the difference in shipping cost from the US Gulf. When freight rises, the band widens.
+    </p>
+
+    <h2 id="storage">7. How does European gas storage work?</h2>
+    <p>
+      Europe uses far more gas in winter, mostly for heating. Storage sites, such as depleted fields, salt caverns and
+      aquifers, absorb the difference. They <strong>inject</strong> from about April to October and
+      <strong>withdraw</strong> from about November to March. EU storage holds roughly a third of annual EU gas use
+      (<a href="https://agsi.gie.eu/">GIE AGSI+</a>).
+    </p>
+    <p>
+      Since 2022 EU law has set a pre-winter <strong>fill target</strong>, 90% from 2023 onwards. Amendments in 2025 keep the
+      90% target but allow it to be met at any point between 1 October and 1 December, with some flexibility in difficult
+      market conditions, and extend the rules to the end of 2027
+      (<a href="https://www.consilium.europa.eu/en/press/press-releases/2025/07/18/gas-storage-council-greenlights-2-year-extension-of-reserves-filling-rules-to-safeguard-winter-supply/">Council of the EU, July 2025</a>).
+    </p>
+    <p>
+      The <strong>31 March level</strong> matters because it is the starting point for the next refill. A low end-of-winter
+      level means more gas must be bought over summer, which tends to lift summer prices and the whole curve. The
+      <strong>summer-winter spread</strong>, the price of winter gas minus summer gas, pays storage owners to inject.
+      When it is narrow or negative, filling storage loses money without policy support.
+    </p>
+
+    <h2 id="stress">8. How do you stress test gas storage?</h2>
+    <p>
+      Heating demand follows temperature. Analysts measure it with <strong>heating degree days</strong> (HDD): for each
+      day, how far the average temperature falls below a base, here 15.5 °C. A day at 5.5 °C has 10 HDD. A day at 18 °C
+      has zero.
+    </p>
+    <p>
+      A <strong>stress test</strong> asks: given today's storage, what happens to the end-of-winter level if the weather
+      is colder than normal, LNG arrivals fall, or a supply route fails? It is not a forecast. It maps how sensitive
+      the outcome is to each risk.
+    </p>
+    <p class="try"><a href={storage}>Try it in the EU gas storage forecast</a>: compare the four presets.</p>
+
+    <h2 id="connects">9. How it all connects</h2>
+    <p>
+      The pieces form one loop. A cold European winter draws storage down faster. Low storage raises the risk of
+      shortage, so TTF rises. A higher TTF makes Europe the better netback, so flexible US cargoes that would have gone
+      to Asia turn to Europe. Asian buyers must then pay more to keep cargoes, so JKM follows. The JKM TTF spread moves
+      to whatever level redirects enough ships.
+    </p>
+    <p>
+      Freight sits in the middle. When charter rates spike, the spread needed to pull a cargo across a longer route
+      widens, and the two markets can drift further apart before the arb works.
+    </p>
+    <p class="try">
+      <a href={netback}>Netback calculator</a> · <a href={storage}>EU gas storage forecast</a>
+    </p>
+
+    <h2 id="glossary">10. Glossary</h2>
+    <dl class="glossary">
+      <dt>MMBtu</dt><dd>Million British thermal units, the US and LNG energy unit for prices ($/MMBtu).</dd>
+      <dt>MWh</dt><dd>Megawatt hour, the European energy unit. 1 MWh = 3.412 MMBtu.</dd>
+      <dt>HDD</dt><dd>Heating degree days: how far the daily mean temperature falls below a base (here 15.5 °C).</dd>
+      <dt>FOB</dt><dd>Free on board: the buyer takes the cargo at the loading port and pays for shipping.</dd>
+      <dt>DES</dt><dd>Delivered ex ship: the seller delivers to the buyer's import terminal.</dd>
+      <dt>Netback</dt><dd>Destination price minus shipping and boil-off costs: the cargo's value at the loading port.</dd>
+      <dt>Arb</dt><dd>Arbitrage: here, the best Asia netback minus the Europe netback.</dd>
+      <dt>Boil-off</dt><dd>LNG that evaporates during the voyage, as a share of the cargo per day.</dd>
+      <dt>Charter rate</dt><dd>The daily cost of hiring an LNG ship, in $/day.</dd>
+      <dt>Regas</dt><dd>Regasification: turning LNG back into gas at an import terminal.</dd>
+      <dt>TTF</dt><dd>Title Transfer Facility, the Dutch gas hub and Europe's main price benchmark.</dd>
+      <dt>JKM</dt><dd>Japan Korea Marker, the North-east Asian spot LNG price benchmark.</dd>
+      <dt>HH</dt><dd>Henry Hub, the US gas price benchmark, at a hub in Louisiana.</dd>
+    </dl>
+
+    <h2 id="reading">11. Further reading</h2>
+    <p>Free public sources:</p>
+    <ul>
+      <li><a href="https://www.eia.gov/energyexplained/natural-gas/liquefied-natural-gas.php">EIA: Liquefied natural gas explained</a></li>
+      <li><a href="https://www.eia.gov/naturalgas/weekly/">EIA: Natural Gas Weekly Update</a></li>
+      <li><a href="https://agsi.gie.eu/">GIE AGSI+: European gas storage data</a></li>
+      <li><a href="https://alsi.gie.eu/">GIE ALSI: European LNG terminal data</a></li>
+      <li><a href="https://www.iea.org/energy-system/fossil-fuels/natural-gas">IEA: Natural gas</a></li>
+      <li><a href="https://transparency.entsog.eu/">ENTSOG Transparency Platform: European gas flows</a></li>
+      <li><a href="https://www.acer.europa.eu/gas/about-gas">ACER: EU gas market monitoring</a></li>
+    </ul>
+    <p class="muted small">Not investment advice. Written for education. Figures marked illustrative are not market data.</p>
+  </article>
+</Base>

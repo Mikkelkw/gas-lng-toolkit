@@ -1,7 +1,45 @@
 ---
 import Base from '../layouts/Base.astro';
+import { PAGES } from '../lib/pages';
+import '../styles/prose.css';
+
+interface Dated { updated?: string; asOf?: string; full_pct?: number[] }
+const files = import.meta.glob<Dated>('../../public/data/{storage,market}.json', { eager: true, import: 'default' });
+const pick = (n: string) => Object.entries(files).find(([k]) => k.endsWith(`/${n}.json`))?.[1] ?? null;
+const storage = pick('storage');
+const market = pick('market');
+const fmt = (iso?: string) =>
+  iso ? new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : null;
+const updated = fmt([storage?.updated, market?.updated].filter(Boolean).sort().at(-1));
+const full = storage?.full_pct?.at(-1);
 ---
-<Base title="Gas & LNG Toolkit">
-  <h1>Gas &amp; LNG Toolkit</h1>
-  <p>Free tools for gas and LNG traders. Under construction.</p>
+<Base page="home">
+  <div class="prose home">
+    <h1>LNG Flow Tools</h1>
+    <p class="lead">Two free tools for gas and LNG traders: where should a US cargo go, and how much gas will Europe have left by 31 March?</p>
+  </div>
+
+  <div class="cards">
+    <a class="card" href={PAGES.netback.path}>
+      <h2>LNG netback and arbitrage calculator</h2>
+      <p>Compare FOB netbacks for a US Gulf Coast cargo to Europe (TTF) and North Asia (JKM) via Panama, Suez or the Cape. See how far the arb is from flipping.</p>
+      <p class="stat">Henry Hub from EIA, EUR/USD from ECB, refreshed daily.</p>
+      <span class="go">Open the calculator</span>
+    </a>
+    <a class="card" href={PAGES.storage.path}>
+      <h2>EU gas storage forecast</h2>
+      <p>Project EU storage to 31 March under cold weather, LNG shortfall, supply disruption and demand response scenarios.</p>
+      <p class="stat">{full !== undefined ? `EU storage ${full.toFixed(1)}% full on gas day ${fmt(storage?.asOf)} (GIE AGSI+).` : 'Daily data from GIE AGSI+ and ALSI.'}</p>
+      <span class="go">Open the stress test</span>
+    </a>
+  </div>
+
+  <div class="prose">
+    <p><a href={PAGES.learn.path}>New to LNG? Start with the basics</a>: a 10-minute primer on netbacks, arbitrage and European gas storage.</p>
+    <p>
+      Every number on this site comes from a public source or a stated assumption. See the <a href={PAGES.methodology.path}>methodology</a>.
+      No licensed price data is used.
+    </p>
+    {updated && <p class="muted small">Data last updated {updated}.</p>}
+  </div>
 </Base>

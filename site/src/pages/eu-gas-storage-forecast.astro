@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import StorageTool from '../components/StorageTool';
+import StorageMethod from '../components/StorageMethod.astro';
+import model from '../../../data/model.json';
+import { PAGES } from '../lib/pages';
+import { buildStoragePayload, type ModelFile, type StatusFile, type StorageFile, type WeatherFile } from '../lib/storagePayload';
+import '../styles/tool.css';
+
+const files = import.meta.glob<unknown>('../../public/data/{storage,weather,status}.json', { eager: true, import: 'default' });
+const pick = <T,>(name: string) => (Object.entries(files).find(([k]) => k.endsWith(`/${name}.json`))?.[1] ?? null) as T | null;
+const storage = pick<StorageFile>('storage');
+const weather = pick<WeatherFile>('weather');
+const status = pick<StatusFile>('status');
+const data = storage && weather ? buildStoragePayload(storage, weather, model as unknown as ModelFile, status) : null;
+---
+<Base page="storage">
+  <p class="kicker"><a href={PAGES.learn.path}>New to LNG? Start with the basics</a></p>
+  <h1>EU gas storage forecast: winter stress test</h1>
+  <p class="intro">
+    This EU gas storage forecast projects how full European storage will be on 31 March. It starts from today's GIE
+    AGSI+ level, uses the 16-day weather forecast, then normal weather. Pick a preset or move the sliders to test a cold
+    winter, an LNG shortfall or a supply cut.
+  </p>
+
+  {data ? (
+    <StorageTool client:load data={data} />
+  ) : (
+    <p class="warning">Storage data is not available yet. Please check back after the next daily update.</p>
+  )}
+
+  <StorageMethod />
+</Base>

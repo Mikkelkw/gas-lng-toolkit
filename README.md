@@ -1,9 +1,13 @@
-# Gas & LNG Toolkit
+# LNG Flow Tools
+
+Live: https://gas-lng-toolkit.pages.dev/
 
 A free, public site with two tools for gas and LNG market participants:
 
-- **US LNG netback calculator**: compares FOB netbacks for a US Gulf Coast cargo to Northwest Europe (TTF) and North Asia (JKM via Panama, Suez or the Cape).
-- **EU storage winter stress test**: projects EU gas storage to 31 March under weather and supply scenarios.
+- **LNG netback and arbitrage calculator** (`/lng-netback-calculator/`): compares FOB netbacks for a US Gulf Coast cargo to Northwest Europe (TTF) and North Asia (JKM via Panama, Suez or the Cape).
+- **EU gas storage forecast** (`/eu-gas-storage-forecast/`): projects EU gas storage to 31 March under weather and supply scenarios.
+
+A primer for newcomers lives at `/learn/lng-trading-basics/`.
 
 Every number comes from a documented public source or a documented assumption. No licensed price assessments are used.
 

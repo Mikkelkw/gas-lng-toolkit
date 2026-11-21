@@ -1,7 +1,39 @@
 ---
 import Base from '../layouts/Base.astro';
+import { AUTHOR, GITHUB_URL, LINKEDIN_URL, PAGES } from '../lib/pages';
+import '../styles/prose.css';
 ---
-<Base title="About">
-  <h1>About</h1>
-  <p class="muted">Under construction.</p>
+<Base page="about">
+  <article class="prose">
+    <h1>About</h1>
+    <p class="lead">
+      LNG Flow Tools is a free, non-commercial project built by {AUTHOR} to show how gas and LNG markets fit together,
+      with numbers anyone can check.
+    </p>
+    <h2>Why it exists</h2>
+    <p>
+      Netback and storage questions come up every day on a gas desk, but most models sit in private spreadsheets.
+      These tools put two of them in the open: a cargo routing calculator and a winter storage stress test. Each lets
+      you change an assumption and see the result in seconds.
+    </p>
+    <h2>Principles</h2>
+    <ul>
+      <li>Every number comes from a public source or a stated assumption, listed on the <a href={PAGES.methodology.path}>methodology</a> page.</li>
+      <li>No licensed price assessments. TTF and JKM defaults are indicative and entered by hand; enter your own.</li>
+      <li>No ads, no paywall, no login and no tracking.</li>
+      <li>The code is open, including the data pipeline and the tests.</li>
+    </ul>
+    <h2>Data</h2>
+    <p>
+      Storage and LNG data: GIE AGSI+ and GIE ALSI. Henry Hub: EIA. EUR/USD: ECB reference rate. Weather data by
+      <a href="https://open-meteo.com/">Open-Meteo.com</a> (CC BY 4.0). Data refresh daily at 07:00 UTC. If a refresh
+      fails, the site keeps the last good data and shows its date.
+    </p>
+    <h2>Contact and code</h2>
+    <ul>
+      <li><a href={LINKEDIN_URL}>{AUTHOR} on LinkedIn</a></li>
+      <li><a href={GITHUB_URL}>Source code on GitHub</a></li>
+    </ul>
+    <p class="muted small">Not investment advice. The tools are simplified models for education and discussion.</p>
+  </article>
 </Base>

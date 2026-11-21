@@ -1,4 +1,4 @@
-# SPEC: Gas & LNG Toolkit
+# SPEC: LNG Flow Tools
 
 ## 1. Purpose
 
@@ -10,7 +10,7 @@ Success means: a trader or analyst can open a tool, change an assumption, and un
 
 | Decision | Default |
 |---|---|
-| Site name | Gas & LNG Toolkit |
+| Site name | LNG Flow Tools (renamed from "Gas & LNG Toolkit" in phase 9) |
 | Domain | none at first (use the free *.pages.dev URL); add custom domain later |
 | Author line | Built by Mikkel Wahl |
 | LinkedIn URL | https://www.linkedin.com/in/mikkelwahl/ |
@@ -97,8 +97,8 @@ Given today's EU storage level, where will storage be on 31 March under differen
 ## 5. Site pages
 
 - Home: one-line pitch, two tool cards, last-updated date
-- /netback
-- /storage
+- /lng-netback-calculator (old /netback redirects)
+- /eu-gas-storage-forecast (old /storage redirects)
 - /learn/lng-trading-basics: primer for aspiring commodity traders and finance people new to LNG (see section 5a)
 - /methodology: formulas, assumptions with sources, model fit, limitations
 - /about: who built it and why, link to LinkedIn and the GitHub repo

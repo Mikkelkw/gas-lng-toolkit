@@ -35,3 +35,7 @@ One line each: date, decision, reason.
 - 2026-11-21: Storage page payload computed at build time (current winter, range, normals, forecast) rather than shipping full history to the browser. Daily rebuild keeps it current.
 - 2026-11-21: Daily workflow fails visibly (red run, GitHub email) when any source fails, but only after committing and deploying the last good data. Partial failure never blocks the deploy.
 - 2026-11-21: Wrangler pinned to 4.166.0 in CI for reproducible deploys.
+- 2026-11-21: Redirects as Cloudflare Pages `_redirects` (true 301s), not meta-refresh pages.
+- 2026-11-21: Canonical URLs use the trailing-slash form Cloudflare serves (e.g. /lng-netback-calculator/).
+- 2026-11-21: No Open Graph image in v1 (twitter:card summary); suggested for v1.1.
+- 2026-11-21: Primer cites EIA (2020 cancellations: ~46 in June, ~50 in July) and the Council of the EU (2025 storage rule amendments) for its only time-sensitive facts.

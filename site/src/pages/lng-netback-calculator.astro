@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import NetbackTool from '../components/NetbackTool';
+import NetbackMethod from '../components/NetbackMethod.astro';
+import { assumptionItems, defaultRoutes } from '../lib/assumptions';
+import { overlayMarket, type MarketFile } from '../lib/market';
+import { PAGES } from '../lib/pages';
+import '../styles/tool.css';
+
+// Latest Henry Hub and EUR/USD from the daily pipeline, if present. Falls back to documented defaults.
+const marketFiles = import.meta.glob<MarketFile>('../../public/data/market.json', { eager: true, import: 'default' });
+const items = overlayMarket(assumptionItems, Object.values(marketFiles)[0] ?? null);
+---
+<Base page="netback">
+  <p class="kicker"><a href={PAGES.learn.path}>New to LNG? Start with the basics</a></p>
+  <h1>LNG netback and arbitrage calculator</h1>
+  <p class="intro">
+    An LNG netback is what a cargo earns at the US Gulf Coast loading port after shipping costs. This calculator compares
+    the netback to Europe (TTF) with three routes to North Asia (JKM), and shows the LNG arbitrage: how far the JKM TTF
+    spread is from paying for the longer voyage. Change any input; your scenario is saved in the page link.
+  </p>
+
+  <NetbackTool client:load items={items} routes={defaultRoutes} />
+
+  <NetbackMethod />
+</Base>

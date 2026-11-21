@@ -20,6 +20,9 @@ export default function PlotFigure({ render, deps, ariaLabel }: Props) {
       const node = render(width);
       node.setAttribute('role', 'img');
       node.setAttribute('aria-label', ariaLabel);
+      // The root carries the description. Plot's internal <g aria-label> groups have no role,
+      // which is invalid ARIA, and screen readers treat img children as presentational anyway.
+      node.querySelectorAll('g[aria-label]').forEach((g) => g.removeAttribute('aria-label'));
       el.replaceChildren(node);
     };
     draw();

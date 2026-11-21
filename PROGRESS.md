@@ -10,7 +10,7 @@
 | 6. Storage model | done |
 | 7. Storage page | done |
 | 8. Automation | done |
-| 9. Polish | not started |
+| 9. Polish | done |
 | 10. Final review | not started |
 
 ## Log
@@ -78,3 +78,13 @@
 - `.github/workflows/ci.yml`: tests, type check and build on every push and PR; deploys to Cloudflare Pages on push to main once both suites pass.
 - Verified: CI run green incl. deploy; manual daily run green (all sources ok, data commit 3fc0d47, deployed).
 - Failure handling: per-source validation and keep-last-good in `pipeline/build.py` (unit tested; also seen live when ALSI returned an empty page).
+
+### Phase 9: Polish and SEO
+- Renamed to "LNG Flow Tools" (site, titles, header, README, SPEC.md, CLAUDE.md). Repo and pages.dev URL unchanged.
+- Routes: /lng-netback-calculator/ and /eu-gas-storage-forecast/; 301s from /netback and /storage via `public/_redirects`.
+- SEO: `src/lib/pages.ts` holds titles and unique descriptions (tested: max 155 characters, unique, SPEC titles); canonical URLs, Open Graph and Twitter tags, sitemap.xml, robots.txt.
+- New pages: home (tool cards, live storage level, last-updated date), about, methodology (data sources with last successful refresh, both method sections), primer /learn/lng-trading-basics/ (1,694 words, 11 sections, sourced facts, illustrative numbers labelled). "New to LNG?" links on both tools.
+- Method sections moved to shared components used by tool pages and /methodology.
+- Lighthouse (mobile, local build): 100/100/100/100 on all six pages after removing invalid ARIA on Plot's internal groups (tool pages were 96 accessibility before).
+- All pages checked at 390px: no horizontal scroll, no console errors. External links checked (ACER link fixed; Consilium returns 403 to scripts only).
+- Vitest 60 passed, pytest 56 passed.
