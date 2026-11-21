@@ -1,0 +1,91 @@
+name: Daily data refresh
+
+on:
+  schedule:
+    - cron: '0 7 * * *' # 07:00 UTC daily (SPEC section 6)
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Re-fetch the full history'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+
+      # Each source is fetched, validated and written independently. On failure the previous
+      # file is kept and the error is recorded in site/public/data/status.json (hard rule 6).
+      - name: Fetch data
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          GIE_API_KEY: ${{ secrets.GIE_API_KEY }}
+        run: python -m pipeline.build ${{ inputs.full && '--full' || '' }}
+
+      - name: Refit storage model
+        run: python -m pipeline.model
+
+      - name: Pipeline tests
+        run: python -m pytest -q
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Site tests and build
+        working-directory: site
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/public/data data/model.json
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "Daily data refresh $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+        run: npx --yes wrangler@4.166.0 pages deploy dist --project-name gas-lng-toolkit --branch main --commit-hash "$(git rev-parse HEAD)"
+
+      # Runs after the deploy, so the site always has the last good data. A red run
+      # here means a source failed and the owner gets GitHub's failure email.
+      - name: Report refresh failures
+        run: |
+          python - <<'EOF'
+          import json, sys
+          s = json.load(open("site/public/data/status.json"))
+          bad = {k: v.get("error") for k, v in s.items() if isinstance(v, dict) and not v.get("ok", True)}
+          for k, e in bad.items():
+              print(f"::error title=Refresh failed: {k}::{e} (site shows last good data)")
+          sys.exit(1 if bad else 0)
+          EOF
