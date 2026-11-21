@@ -128,6 +128,7 @@ def build_storage(prev: dict | None, today: date, full: bool = False) -> dict:
         "updated": now_iso(),
         "asOf": days[-1],
         "workingGasVolumeTwh": latest["wgv_twh"],
+        "annualConsumptionTwh": latest.get("consumption_twh") or (prev or {}).get("annualConsumptionTwh"),
         "units": {"storage": "TWh", "full": "% of working gas volume", "flows": "TWh/d (gas day)"},
         "attribution": [ATTRIBUTION["agsi"], ATTRIBUTION["alsi"]],
         "days": days,

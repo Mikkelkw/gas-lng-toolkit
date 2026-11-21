@@ -26,3 +26,9 @@ One line each: date, decision, reason.
 - 2026-11-21: History starts 2015-10-01 (10 full winters before 2025/26). Daily refresh re-fetches 45 days to pick up revisions and merges onto stored JSON in site/public/data/.
 - 2026-11-21: Observed temperatures = Open-Meteo archive, with days after the archive end filled from the forecast API's past_days analysis.
 - 2026-11-21: Validation rejects truncated history (start later than 2015-10-08), gaps over 3 days in the last 400 days, stale data, and shrinking history. Added after a live run once returned only 900 days.
+- 2026-11-21: Model fitted on the last 5 complete winters, not all 10. Smallest back-test error of the windows tried (all 10, last 5, post-2022) and reflects the post-2021 supply mix. Meets SPEC minimum of 5.
+- 2026-11-21: LNG deviation in projections = recent 30-day average send-out x scenario %, i.e. the recent average stands in for the winter average.
+- 2026-11-21: Normal weather = each of the last 10 winters' temperature for that calendar day, shifted by the scenario offset, converted to HDD per year, then averaged. Forecast days use the forecast unshifted.
+- 2026-11-21: Demand response cuts daily net withdrawal by % x average EU daily demand (AGSI EU annual consumption / 365). Simple and explainable; ignores seasonality of demand.
+- 2026-11-21: Presets: Normal (0 C), Cold winter (-2 C), Cold + LNG shortfall (-2 C, -20% LNG), Mild (+2 C).
+- 2026-11-21: Projection logic exists in Python (back-test) and TypeScript (site). A parity case in model.json is checked by both test suites so they cannot drift.

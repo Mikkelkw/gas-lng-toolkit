@@ -125,6 +125,8 @@ def parse_agsi_rows(rows: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
             "full_pct": round(full, 2),
             "net_withdrawal_twh": round(nw / 1000, 4),
             "wgv_twh": round(wgv, 4),
+            # EU-level annual gas consumption in TWh, published by AGSI for countries and the EU.
+            "consumption_twh": _num(r.get("consumption")),
         }
     return out
 

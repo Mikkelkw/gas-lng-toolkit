@@ -7,7 +7,7 @@
 | 3. Netback engine | done |
 | 4. Netback page | done |
 | 5. Storage pipeline | done |
-| 6. Storage model | not started |
+| 6. Storage model | done |
 | 7. Storage page | not started |
 | 8. Automation | not started |
 | 9. Polish | not started |
@@ -57,3 +57,10 @@
 - Live run: storage 2015-10-01 to 2026-11-19 (4,068 days, 69.59% full), weather to 2026-11-20 plus 16-day forecast, HH $3.10 (17 Nov), EUR/USD 1.099 (20 Nov).
 - A live ALSI empty response (likely rate limit after a full refetch) was caught: last good file kept. Added one retry after 65 s.
 - pytest 44 passed.
+
+### Phase 6: Storage model
+- `pipeline/model.py`: OLS fit of daily net withdrawal on HDD (base 15.5 C) and LNG send-out deviation, last 5 complete winters (2021/22 to 2025/26), n = 911 days.
+- Fit: a = -2.81 TWh/d, b = 0.704 TWh/d per HDD (SE 0.012), c = -0.17 (SE 0.10), R2 = 0.80, RMSE 1.40 TWh/d. Saved with normals (10 winters), presets and a parity case in `data/model.json`.
+- Back-test on 2025/26 (fit on 2020/21 to 2024/25), error at 31 March (actual 313.8 TWh, 27.7%): from 1 Oct +58.8 TWh (+5.2 pp) with actual weather, +62.2 TWh with normal weather; from 1 Nov +37.0 / +31.3 TWh; from 1 Jan +16.8 / +10.3 TWh. The model under-predicted withdrawals that winter.
+- Pipeline now also records EU annual consumption (AGSI `consumption`, 3,519 TWh) for the demand-response control.
+- pytest 56 passed.

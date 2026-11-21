@@ -48,13 +48,15 @@ def test_parse_ecb_errors():
 
 AGSI_ROW = {"name": "EU", "code": "eu", "gasDayStart": "2026-11-19", "gasInStorage": "788.0393",
             "injection": "435.31", "withdrawal": "3079.1", "netWithdrawal": "2643.7",
-            "workingGasVolume": "1132.3616", "status": "E", "full": "69.59"}
+            "workingGasVolume": "1132.3616", "status": "E", "full": "69.59",
+            "consumption": "3519"}
 
 
 def test_parse_agsi_converts_gwh_to_twh():
     out = sources.parse_agsi_rows([AGSI_ROW])
     assert out == {"2026-11-19": {"storage_twh": 788.0393, "full_pct": 69.59,
-                                  "net_withdrawal_twh": 2.6437, "wgv_twh": 1132.3616}}
+                                  "net_withdrawal_twh": 2.6437, "wgv_twh": 1132.3616,
+                                  "consumption_twh": 3519.0}}
 
 
 def test_parse_agsi_derives_net_withdrawal_and_skips_bad_rows():
