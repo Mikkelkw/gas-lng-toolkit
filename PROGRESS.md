@@ -11,7 +11,7 @@
 | 7. Storage page | done |
 | 8. Automation | done |
 | 9. Polish | done |
-| 10. Final review | not started |
+| 10. Final review | done, awaiting checkpoint review |
 
 ## Log
 
@@ -88,3 +88,11 @@
 - Lighthouse (mobile, local build): 100/100/100/100 on all six pages after removing invalid ARIA on Plot's internal groups (tool pages were 96 accessibility before).
 - All pages checked at 390px: no horizontal scroll, no console errors. External links checked (ACER link fixed; Consilium returns 403 to scripts only).
 - Vitest 60 passed, pytest 56 passed.
+
+### Phase 10: Final review
+- Tests: Vitest 60 passed, pytest 56 passed; CI green including deploy.
+- Live site: all 6 pages, sitemap, robots and data return 200. Old /netback and /storage return 301 and keep query strings, so shared scenario links still work.
+- Footer present on every page; canonical URL and description (120 to 151 characters) on every page.
+- Attribution: GIE AGSI+, GIE ALSI and Open-Meteo (CC BY 4.0, linked) under the storage chart; EIA and ECB under the netback charts; data sources table on /methodology.
+- No licensed price data fetched or stored (code search clean).
+- Mobile: every live page checked at 360px and 390px, no horizontal scroll, no console errors. Reference tables set to scroll inside their frame on phones.
