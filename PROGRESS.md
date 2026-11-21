@@ -8,7 +8,7 @@
 | 4. Netback page | done |
 | 5. Storage pipeline | done |
 | 6. Storage model | done |
-| 7. Storage page | not started |
+| 7. Storage page | done |
 | 8. Automation | not started |
 | 9. Polish | not started |
 | 10. Final review | not started |
@@ -64,3 +64,11 @@
 - Back-test on 2025/26 (fit on 2020/21 to 2024/25), error at 31 March (actual 313.8 TWh, 27.7%): from 1 Oct +58.8 TWh (+5.2 pp) with actual weather, +62.2 TWh with normal weather; from 1 Nov +37.0 / +31.3 TWh; from 1 Jan +16.8 / +10.3 TWh. The model under-predicted withdrawals that winter.
 - Pipeline now also records EU annual consumption (AGSI `consumption`, 3,519 TWh) for the demand-response control.
 - pytest 56 passed.
+
+### Phase 7: Storage page
+- `site/src/lib/storage.ts`: projection mirroring the Python model (parity test passes to 1e-9), winter helpers, 5-winter range, headline.
+- `site/src/lib/storagePayload.ts`: builds a compact payload at build time from storage/weather/status/model JSON; stale-data note when a refresh failed; off-season fallback (April to September shows last winter, no projection).
+- Storage page: presets, sliders (temperature, LNG, demand response, disruption with start date and duration), chart (this winter, dashed projection, 5-winter average and range, tooltips, legend), preset table, model and back-test section, limitations, GIE and Open-Meteo attribution under the chart.
+- Today's result (gas day 19 Nov 2026, 69.6% full): Normal 19.6%, Cold 5.2%, Cold + LNG shortfall 3.6%, Mild 34.1% on 31 March.
+- Browser checks at 1280px and 390px: no horizontal scroll, no page errors; presets, sliders and netback URL update verified with Chrome automation.
+- Vitest 54 passed, pytest 56 passed.

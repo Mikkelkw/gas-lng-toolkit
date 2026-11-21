@@ -1,7 +1,97 @@
 ---
 import Base from '../layouts/Base.astro';
+import StorageTool from '../components/StorageTool';
+import model from '../../../data/model.json';
+import { buildStoragePayload, type ModelFile, type StatusFile, type StorageFile, type WeatherFile } from '../lib/storagePayload';
+import '../styles/tool.css';
+
+const files = import.meta.glob<unknown>('../../public/data/{storage,weather,status}.json', { eager: true, import: 'default' });
+const pick = <T,>(name: string) => (Object.entries(files).find(([k]) => k.endsWith(`/${name}.json`))?.[1] ?? null) as T | null;
+const storage = pick<StorageFile>('storage');
+const weather = pick<WeatherFile>('weather');
+const status = pick<StatusFile>('status');
+const data = storage && weather ? buildStoragePayload(storage, weather, model as unknown as ModelFile, status) : null;
+
+const bt = model.backtest;
+const f2 = (v: number) => v.toFixed(2);
+const sign = (v: number, d = 1) => (v > 0 ? `+${v.toFixed(d)}` : v < 0 ? `−${Math.abs(v).toFixed(d)}` : v.toFixed(d));
+const fmtDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
-<Base title="EU storage winter stress test">
-  <h1>EU storage winter stress test</h1>
-  <p class="muted">Under construction.</p>
+<Base
+  title="EU gas storage winter stress test"
+  description="Where will EU gas storage be on 31 March? Project storage under weather, LNG and supply scenarios. Daily GIE AGSI+ data, free and sourced."
+>
+  <h1>EU gas storage winter stress test</h1>
+  <p class="intro">
+    Given today's EU gas storage, where will it be on 31 March? Pick a preset or move the sliders. The projection uses
+    the 16-day weather forecast, then normal weather adjusted by your scenario.
+  </p>
+
+  {data ? (
+    <StorageTool client:load data={data} />
+  ) : (
+    <p class="warning">Storage data is not available yet. Please check back after the next daily update.</p>
+  )}
+
+  <section class="method" id="how">
+    <h2>How the projection works</h2>
+    <p>
+      Daily EU net withdrawal is modelled from heating degree days (HDD) and LNG send-out. The model is fitted on daily
+      data for the winters {model.fit.winters[0]} to {model.fit.winters[model.fit.winters.length - 1]} (1 October to 31 March).
+    </p>
+    <p class="formula"><strong>Net withdrawal (TWh/d)</strong> = a + b × HDD + c × (LNG send-out − winter average)</p>
+    <div class="table-wrap" role="region" aria-label="Model coefficients" tabindex="0">
+      <table class="sources">
+        <thead><tr><th scope="col">Term</th><th scope="col" class="num">Estimate</th><th scope="col" class="num">Std. error</th><th scope="col">Unit</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">a, intercept</th><td class="num">{sign(model.coefficients.a.value, 3)}</td><td class="num">{model.coefficients.a.se.toFixed(3)}</td><td>TWh/d</td></tr>
+          <tr><th scope="row">b, per HDD</th><td class="num">{sign(model.coefficients.b.value, 3)}</td><td class="num">{model.coefficients.b.se.toFixed(3)}</td><td>TWh/d per HDD</td></tr>
+          <tr><th scope="row">c, LNG deviation</th><td class="num">{sign(model.coefficients.c.value, 3)}</td><td class="num">{model.coefficients.c.se.toFixed(3)}</td><td>TWh/d per TWh/d</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small">R² {f2(model.fit.r2)}, root mean square error {f2(model.fit.rmseTwh)} TWh/d, {model.fit.n.toLocaleString('en-GB')} days.</p>
+    <ul>
+      <li>HDD = max(0, 15.5 °C − EU mean temperature). The EU temperature is a gas-demand-weighted average of 16 cities in 12 countries, which use 91% of EU gas.</li>
+      <li>Each day: storage = previous storage − net withdrawal, kept between 0 and the working gas volume.</li>
+      <li>Forecast days use the forecast as is. Later days use the average HDD of the winters {model.normals.winters[0]} to {model.normals.winters[model.normals.winters.length - 1]} for that calendar day, with each year's temperature shifted by the scenario.</li>
+      <li>LNG scenario: send-out changes by the chosen % of the last 30 days' average.</li>
+      <li>Supply disruption: adds the chosen TWh/d to withdrawal over its dates.</li>
+      <li>Demand response: cuts withdrawal by the chosen % of average EU daily demand (GIE annual consumption ÷ 365).</li>
+    </ul>
+
+    <h3>Back-test: winter {bt.winter}</h3>
+    <p>
+      The model was refitted on {bt.fitWinters[0]} to {bt.fitWinters[bt.fitWinters.length - 1]} and run through winter {bt.winter}.
+      Actual storage on 31 March was {bt.actual31MarTwh} TWh ({bt.actual31MarPct}% full).
+    </p>
+    <div class="table-wrap" role="region" aria-label="Back-test results" tabindex="0">
+      <table class="sources">
+        <thead>
+          <tr><th scope="col">Projection from</th><th scope="col" class="num">Error, actual weather (TWh)</th><th scope="col" class="num">Error, actual weather (pp)</th><th scope="col" class="num">Error, normal weather (TWh)</th></tr>
+        </thead>
+        <tbody>
+          {bt.cases.map((c) => (
+            <tr><th scope="row">{fmtDate(c.start)}</th><td class="num">{sign(c.actualWeather.errorTwh)}</td><td class="num">{sign(c.actualWeather.errorPp)}</td><td class="num">{sign(c.normalWeather.errorTwh)}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small">
+      Error = projected minus actual storage on 31 March. Positive means the model left too much gas in storage. With actual weather the
+      model still under-predicted withdrawals that winter, so treat projections as a stress test, not a forecast.
+    </p>
+
+    <h3>Limitations</h3>
+    <ul>
+      <li>No price response: high prices that cut demand or attract LNG are only captured through the scenario sliders.</li>
+      <li>No withdrawal capacity limit as storage empties.</li>
+      <li>Pipeline imports are not modelled separately; they sit in the intercept.</li>
+      <li>EU aggregate only. Country storage can diverge sharply.</li>
+    </ul>
+    <p class="muted small">
+      Data: GIE AGSI+ and GIE ALSI, updated daily. Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a> (CC BY 4.0), daily mean 2 m temperature.
+    </p>
+  </section>
 </Base>
