@@ -83,3 +83,8 @@ code { font-size: 0.9em; background: var(--panel); padding: 1px 4px; border-radi
 
 /* Wide reference tables scroll inside their frame on phones instead of squashing. */
 table.sources { min-width: 640px; }
+
+/* Age of the manual TTF and JKM defaults. Amber once older than 7 days; the label carries the meaning too. */
+.price-age { margin: 0 0 8px; font-size: 0.8rem; color: var(--muted); border-left: 4px solid var(--line); padding: 4px 8px; }
+.price-age.stale { background: #fff7e0; border-left-color: #b45309; color: #5c3a00; }
+.note-line { margin: 0 0 8px; font-size: 0.875rem; color: var(--muted); }

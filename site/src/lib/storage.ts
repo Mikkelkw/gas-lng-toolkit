@@ -176,8 +176,89 @@ export function meanOfLast(values: (number | null)[], n: number): number {
   return v.reduce((a, b) => a + b, 0) / v.length;
 }
 
-/** "Projected 31 March storage: X% (Y TWh) under this scenario" (SPEC section 4). */
-export function storageHeadline(end: PathPoint, endDay: string): string {
+/**
+ * "Projected 31 March storage: X% (Y TWh) under this scenario" (SPEC section 4),
+ * followed by ", likely range A to B%" when a back-test range is given.
+ */
+export function storageHeadline(end: PathPoint, endDay: string, range?: LikelyRange): string {
   const d = new Date(`${endDay}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
-  return `Projected ${d} storage: ${end.full.toFixed(1)}% (${Math.round(end.storage)} TWh) under this scenario`;
+  const base = `Projected ${d} storage: ${end.full.toFixed(1)}% (${Math.round(end.storage)} TWh) under this scenario`;
+  return range ? `${base}, ${rangeText(range)}` : base;
+}
+
+// ------------------------------------------------------------------ model uncertainty
+
+/** Back-test error for one projection horizon, in percentage points of working gas volume. */
+export interface ErrorPoint {
+  /** Days from the last data day to 31 March. */
+  daysLeft: number;
+  /** Projected minus actual 31 March storage. Positive means the model left too much gas in storage. */
+  errorPp: number;
+}
+
+export interface BacktestCase {
+  start: string;
+  actualWeather: { errorPp: number };
+  normalWeather: { errorPp: number };
+}
+
+/**
+ * One error point per back-test case: the larger absolute error of the actual-weather and
+ * normal-weather runs, keeping its sign. A case starting on day S uses data to S - 1.
+ */
+export function backtestErrors(cases: BacktestCase[], endDay: string): ErrorPoint[] {
+  return cases
+    .map((c) => {
+      const a = c.actualWeather.errorPp;
+      const n = c.normalWeather.errorPp;
+      return { daysLeft: daysBetween(addDays(c.start, -1), endDay), errorPp: Math.abs(a) >= Math.abs(n) ? a : n };
+    })
+    .sort((x, y) => x.daysLeft - y.daysLeft);
+}
+
+/**
+ * Half-width of the likely range (pp) for a projection with `daysLeft` days to go.
+ * Linear in the horizon through the back-test points, zero at 31 March, flat beyond the
+ * longest back-tested horizon. No bias correction: the band is symmetric about the projection.
+ */
+export function uncertaintyPp(points: ErrorPoint[], daysLeft: number): number {
+  if (daysLeft <= 0 || points.length === 0) return 0;
+  const pts = [{ daysLeft: 0, err: 0 }, ...points.map((p) => ({ daysLeft: p.daysLeft, err: Math.abs(p.errorPp) }))];
+  for (let k = 1; k < pts.length; k++) {
+    const lo = pts[k - 1];
+    const hi = pts[k];
+    if (daysLeft <= hi.daysLeft) {
+      const t = hi.daysLeft === lo.daysLeft ? 1 : (daysLeft - lo.daysLeft) / (hi.daysLeft - lo.daysLeft);
+      return lo.err + t * (hi.err - lo.err);
+    }
+  }
+  return pts[pts.length - 1].err;
+}
+
+export interface LikelyRange {
+  low: number; // % full
+  high: number; // % full
+}
+
+/** Projection ± half-width, kept between 0% and 100% full. */
+export function likelyRange(fullPct: number, halfWidthPp: number): LikelyRange {
+  return { low: Math.max(0, fullPct - halfWidthPp), high: Math.min(100, fullPct + halfWidthPp) };
+}
+
+/** "Likely range 16.9 to 22.4%". */
+export function rangeText(r: LikelyRange): string {
+  return `likely range ${r.low.toFixed(1)} to ${r.high.toFixed(1)}%`;
+}
+
+/**
+ * One line on the direction of last winter's back-test error, from the longest horizon.
+ * Empty when there is no back-test.
+ */
+export function biasNote(points: ErrorPoint[], winter: string): string {
+  if (points.length === 0) return '';
+  const p = points[points.length - 1];
+  if (Math.abs(p.errorPp) < 0.05) return `In the ${winter} back-test the model matched actual 31 March storage.`;
+  const dir = p.errorPp > 0 ? 'under-predicted withdrawals' : 'over-predicted withdrawals';
+  const left = p.errorPp > 0 ? 'too much' : 'too little';
+  return `The model ${dir} last winter (${winter}): run from 1 October, it left ${Math.abs(p.errorPp).toFixed(1)} points ${left} gas in storage at 31 March. The range is not bias-corrected.`;
 }

@@ -1,6 +1,6 @@
 /** EU storage winter stress test island. UI only: numbers come from lib/storage. */
 import { useMemo, useState } from 'preact/hooks';
-import { addDays, project, storageHeadline, type PathPoint, type Scenario } from '../lib/storage';
+import { addDays, daysBetween, likelyRange, project, storageHeadline, uncertaintyPp, type PathPoint, type Scenario } from '../lib/storage';
 import type { StoragePayload } from '../lib/storagePayload';
 import StorageChart, { StorageLegend } from './StorageChart';
 
@@ -75,6 +75,10 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
   const path = useMemo(() => run(sc), [sc, data]);
   const presetRows = useMemo(() => data.presets.map((p) => ({ p, end: run({ ...NORMAL, ...p }).at(-1) })), [data]);
   const end = path.at(-1);
+  // Model uncertainty from the back-test, scaled to the days left. Same width for every scenario.
+  const halfWidth = canProject ? uncertaintyPp(data.errors, daysBetween(data.asOf, data.endDay)) : 0;
+  const hasBand = halfWidth > 0;
+  const rangeOf = (full: number) => likelyRange(full, halfWidth);
   const activePreset = data.presets.find(
     (p) =>
       p.tempDelta === sc.tempDelta &&
@@ -92,7 +96,7 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
     <div class="tool">
       <section class="tool-results" aria-labelledby="storage-result">
         <h2 id="storage-result" class="headline" aria-live="polite">
-          {end ? storageHeadline(end, data.endDay) : `Winter ${data.winterLabel}: projection resumes on 1 October`}
+          {end ? storageHeadline(end, data.endDay, hasBand ? rangeOf(end.full) : undefined) : `Winter ${data.winterLabel}: projection resumes on 1 October`}
         </h2>
         <p class="lede">
           Data as of gas day <strong>{fmtDate(data.asOf)}</strong>: {data.actual.at(-1)?.full.toFixed(1)}% full (
@@ -104,6 +108,12 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
             </>
           )}
         </p>
+        {end && hasBand && (
+          <p class="note-line">
+            Likely range = projection ± {halfWidth.toFixed(1)} points, the back-test error for the same number of days to 31 March.{' '}
+            {data.biasNote}
+          </p>
+        )}
         {data.staleNote && <p class="warning">{data.staleNote}</p>}
 
         <figure class="chart">
@@ -130,6 +140,7 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
                     <th scope="col">Preset</th>
                     <th scope="col">Assumptions</th>
                     <th scope="col" class="num">31 Mar (% full)</th>
+                    {hasBand && <th scope="col" class="num">Likely range (% full)</th>}
                     <th scope="col" class="num">31 Mar (TWh)</th>
                   </tr>
                 </thead>
@@ -141,6 +152,11 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
                         {signed(p.tempDelta, ' °C')}, LNG {signed(p.lngPct, '%', 0)}
                       </td>
                       <td class="num">{e ? e.full.toFixed(1) : 'n/a'}</td>
+                      {hasBand && (
+                        <td class="num nowrap">
+                          {e ? `${rangeOf(e.full).low.toFixed(1)} to ${rangeOf(e.full).high.toFixed(1)}` : 'n/a'}
+                        </td>
+                      )}
                       <td class="num">{e ? Math.round(e.storage) : 'n/a'}</td>
                     </tr>
                   ))}
@@ -151,6 +167,7 @@ export default function StorageTool({ data }: { data: StoragePayload }) {
               Weather: {data.forecastEnd ? `forecast to ${fmtDate(data.forecastEnd)}, then ` : ''}the average of winters{' '}
               {data.normalWinters[0]} to {data.normalWinters[data.normalWinters.length - 1]}, shifted by the scenario. LNG
               baseline: {data.recentLng.toFixed(2)} TWh/d, the last {data.recentLngDays} days' average.
+              {hasBand && ` Likely range: projection ± ${halfWidth.toFixed(1)} points, from the back-test. Not bias-corrected.`}
             </p>
           </>
         )}

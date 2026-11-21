@@ -61,6 +61,14 @@ const fmtDate = (iso: string) =>
     Error = projected minus actual storage on 31 March. Positive means the model left too much gas in storage. With actual weather the
     model still under-predicted withdrawals that winter, so treat projections as a stress test, not a forecast.
   </p>
+  <h3>Likely range</h3>
+  <p>
+    The headline and the preset table show a likely range of projection ± the back-test error, in percentage points of
+    working gas volume. For each back-test start date the larger of the two errors (actual or normal weather) is used.
+    The width grows linearly with the days left to 31 March, from zero on 31 March to {Math.max(...bt.cases.map((c) => Math.max(Math.abs(c.actualWeather.errorPp), Math.abs(c.normalWeather.errorPp)))).toFixed(1)} points
+    from 1 October. The range is symmetric: the projection is not bias-corrected, so the low bias seen in {bt.winter} is
+    stated, not adjusted for. It rests on one winter's back-test and is a guide, not a confidence interval.
+  </p>
 
   <h3>Limitations</h3>
   <ul>

@@ -5,6 +5,7 @@ import {
   charterSensitivity,
   computeNetbacks,
   costOfSupply,
+  feedgasCost,
   routeNetback,
   ttfToUsd,
   voyageDays,
@@ -62,6 +63,12 @@ describe('hand-calculated case', () => {
     expect(r.boilOffCost).toBeCloseTo(0.10101, 5);
     expect(r.netback).toBeCloseTo(9.20202, 5);
     expect(r.margin).toBeCloseTo(3.25202, 5);
+  });
+  it('lift/cancel margin treats the liquefaction fee as sunk', () => {
+    // 9.20202 - 1.15 x 3.00 = 5.75202
+    expect(feedgasCost(hand)).toBeCloseTo(3.45, 10);
+    expect(r.liftMargin).toBeCloseTo(5.75202, 5);
+    expect(r.liftMargin - r.margin).toBeCloseTo(hand.liquefactionFee, 10);
   });
   it('TTF conversion and cost of supply', () => {
     expect(ttfToUsd(30, 1.1)).toBeCloseTo(9.671747, 6);

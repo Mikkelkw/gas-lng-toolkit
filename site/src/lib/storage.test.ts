@@ -2,14 +2,18 @@ import { describe, expect, it } from 'vitest';
 import model from '../../../data/model.json';
 import {
   addDays,
+  backtestErrors,
+  biasNote,
   completeWinters,
   daysBetween,
   hdd,
+  likelyRange,
   meanOfLast,
   normalHdd,
   project,
   seasonIndex,
   storageHeadline,
+  uncertaintyPp,
   winterDays,
   winterLabel,
   winterOf,
@@ -73,6 +77,63 @@ describe('helpers', () => {
     const h = storageHeadline({ day: '2027-03-31', storage: 401.6, full: 35.46, withdrawal: 0, hdd: 0 }, '2027-03-31');
     expect(h).toBe('Projected 31 March storage: 35.5% (402 TWh) under this scenario');
     expect(h).not.toContain('—');
+  });
+  it('headline with a likely range keeps the SPEC wording first', () => {
+    const end = { day: '2027-03-31', storage: 401.6, full: 35.46, withdrawal: 0, hdd: 0 };
+    const h = storageHeadline(end, '2027-03-31', likelyRange(35.46, 2.5));
+    expect(h).toBe('Projected 31 March storage: 35.5% (402 TWh) under this scenario, likely range 33.0 to 38.0%');
+  });
+});
+
+describe('model uncertainty from the back-test', () => {
+  const cases = [
+    { start: '2025-10-01', actualWeather: { errorPp: 5.2 }, normalWeather: { errorPp: 5.5 } },
+    { start: '2025-11-01', actualWeather: { errorPp: 3.3 }, normalWeather: { errorPp: 2.8 } },
+    { start: '2026-01-01', actualWeather: { errorPp: 1.5 }, normalWeather: { errorPp: -0.9 } },
+  ];
+  const pts = backtestErrors(cases, '2026-03-31');
+
+  it('one point per case, by days left, larger error of the two runs with its sign', () => {
+    expect(pts).toEqual([
+      { daysLeft: 90, errorPp: 1.5 },
+      { daysLeft: 151, errorPp: 3.3 },
+      { daysLeft: 182, errorPp: 5.5 },
+    ]);
+  });
+
+  it('half-width is zero at 31 March, linear between points, flat beyond the longest horizon', () => {
+    expect(uncertaintyPp(pts, 0)).toBe(0);
+    expect(uncertaintyPp(pts, 45)).toBeCloseTo(0.75, 10);
+    expect(uncertaintyPp(pts, 90)).toBeCloseTo(1.5, 10);
+    expect(uncertaintyPp(pts, 120.5)).toBeCloseTo(2.4, 10);
+    expect(uncertaintyPp(pts, 182)).toBeCloseTo(5.5, 10);
+    expect(uncertaintyPp(pts, 250)).toBeCloseTo(5.5, 10);
+    expect(uncertaintyPp([], 100)).toBe(0);
+  });
+
+  it('uses absolute errors, so a negative error still widens the band', () => {
+    expect(uncertaintyPp([{ daysLeft: 100, errorPp: -2 }], 50)).toBeCloseTo(1, 10);
+  });
+
+  it('range is symmetric (no bias correction) and kept within 0 to 100%', () => {
+    expect(likelyRange(19.6, 2.2)).toEqual({ low: 19.6 - 2.2, high: 19.6 + 2.2 });
+    expect(likelyRange(1.0, 2.5).low).toBe(0);
+    expect(likelyRange(99, 2.5).high).toBe(100);
+  });
+
+  it("bias note states the direction and size of last winter's error", () => {
+    expect(biasNote(pts, '2025/26')).toBe(
+      'The model under-predicted withdrawals last winter (2025/26): run from 1 October, it left 5.5 points too much gas in storage at 31 March. The range is not bias-corrected.',
+    );
+    expect(biasNote([{ daysLeft: 182, errorPp: -3 }], '2025/26')).toContain('over-predicted withdrawals');
+    expect(biasNote([], '2025/26')).toBe('');
+    expect(biasNote(pts, '2025/26')).not.toContain('—');
+  });
+
+  it('runs on the real back-test in model.json', () => {
+    const real = backtestErrors(model.backtest.cases, `${Number(model.backtest.winter.slice(0, 4)) + 1}-03-31`);
+    expect(real.length).toBeGreaterThan(0);
+    expect(uncertaintyPp(real, 132)).toBeGreaterThan(0);
   });
 });
 

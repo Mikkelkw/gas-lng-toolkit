@@ -4,13 +4,17 @@
  */
 import {
   addDays,
+  backtestErrors,
+  biasNote,
   completeWinters,
   meanOfLast,
   winterDays,
   winterLabel,
   winterOf,
   winterRange,
+  type BacktestCase,
   type Coefficients,
+  type ErrorPoint,
   type RangePoint,
   type Scenario,
   type StorageSeries,
@@ -37,6 +41,7 @@ export interface ModelFile {
   recentLngDays: number;
   dailyDemandTwh: number;
   presets: (Scenario & { id: string; label: string })[];
+  backtest?: { winter: string; cases: BacktestCase[] };
 }
 
 export interface StatusFile {
@@ -68,6 +73,10 @@ export interface StoragePayload {
   presets: (Scenario & { id: string; label: string })[];
   /** Set when the last refresh failed and older data is shown. */
   staleNote: string | null;
+  /** Back-test errors by horizon, for the likely range. Empty if there is no back-test. */
+  errors: ErrorPoint[];
+  /** One line on last winter's back-test bias. */
+  biasNote: string;
 }
 
 const RANGE_WINTERS = 5;
@@ -98,6 +107,8 @@ export function buildStoragePayload(
   });
   const fcDays = Object.keys(forecast).sort();
 
+  const bt = model.backtest;
+  const errors = bt ? backtestErrors(bt.cases, `${Number(bt.winter.slice(0, 4)) + 1}-03-31`) : [];
   const failed = [status?.storage, status?.weather].some((s) => s && s.ok === false);
   return {
     asOf,
@@ -122,6 +133,8 @@ export function buildStoragePayload(
     dailyDemand: storage.annualConsumptionTwh ? storage.annualConsumptionTwh / 365 : model.dailyDemandTwh,
     presets: model.presets,
     staleNote: failed ? `The latest data refresh did not complete. Showing the last good data, gas day ${asOf}.` : null,
+    errors,
+    biasNote: bt ? biasNote(errors, bt.winter) : '',
   };
 }
 

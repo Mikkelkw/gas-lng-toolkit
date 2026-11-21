@@ -4,7 +4,8 @@ import type { AssumptionItem, InputKey } from '../lib/assumptions';
 import { DISTANCE_BOUNDS, FIELDS, GROUP_LABELS, clampField, type FieldDef } from '../lib/fields';
 import { fmt, fmtUsd } from '../lib/format';
 import { breakevenCharter, charterSensitivity, computeNetbacks, type NetbackInputs, type NetbackResult } from '../lib/netback';
-import { breakevenSentence, headline, marginWarning, type DisplayRoute } from '../lib/netbackText';
+import { MARGIN_EXPLAINER, breakevenSentence, headline, marginWarning, type DisplayRoute } from '../lib/netbackText';
+import { priceNotice, todayUtc } from '../lib/priceAge';
 import { applyDistances, decodeScenario, encodeScenario, scenarioFromDefaults, type Scenario } from '../lib/scenarioUrl';
 import { ArbSensitivity, NetbackBars } from './NetbackCharts';
 
@@ -87,7 +88,8 @@ function ResultsTable({ res }: { res: NetbackResult }) {
             <th scope="col" class="num">Shipping ($/MMBtu)</th>
             <th scope="col" class="num">Boil-off ($/MMBtu)</th>
             <th scope="col" class="num">FOB netback ($/MMBtu)</th>
-            <th scope="col" class="num">Margin vs cost of supply ($/MMBtu)</th>
+            <th scope="col" class="num">Full-cost margin ($/MMBtu)</th>
+            <th scope="col" class="num">Lift/cancel margin ($/MMBtu)</th>
           </tr>
         </thead>
         <tbody>
@@ -102,6 +104,7 @@ function ResultsTable({ res }: { res: NetbackResult }) {
               <td class="num">{fmt(r.boilOffCost)}</td>
               <td class="num strong">{fmt(r.netback)}</td>
               <td class={`num${r.margin < 0 ? ' neg' : ''}`}>{fmt(r.margin)}</td>
+              <td class={`num${r.liftMargin < 0 ? ' neg' : ''}`}>{fmt(r.liftMargin)}</td>
             </tr>
           ))}
         </tbody>
@@ -118,6 +121,11 @@ export default function NetbackTool({ items, routes }: Props) {
   const defaults = useMemo(() => scenarioFromDefaults(defaultInputs, routes), [defaultInputs, routes]);
   const [scenario, setScenario] = useState<Scenario>(defaults);
   const [status, setStatus] = useState('');
+  // The viewer's date, set after mount. Rendering the notice only then avoids a hydration
+  // mismatch (Preact does not patch attributes during hydration, so the amber class would be lost).
+  const [today, setToday] = useState<string | null>(null);
+  useEffect(() => setToday(todayUtc()), []);
+  const prices = today ? priceNotice([items.ttf.asOf, items.jkm.asOf], today) : null;
 
   // Load a shared scenario from the URL once, on the client.
   useEffect(() => {
@@ -176,10 +184,11 @@ export default function NetbackTool({ items, routes }: Props) {
           <>
             <p class="lede">
               Arb (best Asia minus Europe): <strong>{fmtUsd(res.arb)}/MMBtu</strong>. {breakevenSentence(res, scenario.inputs.jkm)}{' '}
-              TTF converts to {fmtUsd(res.ttfUsd)}/MMBtu. Cost of supply is {fmtUsd(res.costOfSupply)}/MMBtu.
+              TTF converts to {fmtUsd(res.ttfUsd)}/MMBtu. Cost of supply is {fmtUsd(res.costOfSupply)}/MMBtu, of which feedgas {fmtUsd(res.feedgasCost)}/MMBtu.
             </p>
             {marginWarning(res) && <p class="warning">{marginWarning(res)}</p>}
             <ResultsTable res={res} />
+            <p class="chart-source">{MARGIN_EXPLAINER}</p>
 
             <figure class="chart">
               <figcaption>
@@ -227,6 +236,12 @@ export default function NetbackTool({ items, routes }: Props) {
         {groups.map((g) => (
           <fieldset key={g}>
             <legend>{GROUP_LABELS[g]}</legend>
+            {g === 'prices' && prices && (
+              <p class={`price-age${prices.stale ? ' stale' : ''}`}>
+                {prices.stale && <strong>Check prices: </strong>}
+                {prices.text}
+              </p>
+            )}
             <div class="fields">
               {FIELDS.filter((f) => f.group === g).map((f) => (
                 <NumberField

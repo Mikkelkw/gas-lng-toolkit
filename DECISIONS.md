@@ -39,3 +39,10 @@ One line each: date, decision, reason.
 - 2026-11-21: Canonical URLs use the trailing-slash form Cloudflare serves (e.g. /lng-netback-calculator/).
 - 2026-11-21: No Open Graph image in v1 (twitter:card summary); suggested for v1.1.
 - 2026-11-21: Primer cites EIA (2020 cancellations: ~46 in June, ~50 in July) and the Council of the EU (2025 storage rule amendments) for its only time-sensitive facts.
+- 2026-11-21: Storage likely range = projection ± back-test error in pp of working gas volume, using the larger of the actual-weather and normal-weather errors for each back-test start date. Reason: the normal-weather run is the real forecast case, but on 1 Jan the actual-weather error was larger, so taking the larger is the cautious choice.
+- 2026-11-21: Range width is interpolated linearly by days left to 31 March (zero on 31 March, flat beyond the 1 October horizon). Reason: error grows with horizon in the back-test (1.5, 3.3, 5.5 pp at 90, 151, 182 days), and a fixed width would overstate uncertainty late in winter.
+- 2026-11-21: Range is symmetric and the projection is not bias-corrected; the 2025/26 low bias is stated in one line instead. Reason: owner instruction, and one winter is too little to estimate a bias.
+- 2026-11-21: The range is called a "likely range", not a confidence interval, and the method text says it rests on one winter's back-test. Reason: avoid implying statistical coverage it does not have.
+- 2026-11-21: Lift/cancel margin = FOB netback − feedgas multiplier × Henry Hub (liquefaction fee sunk). The existing margin column is renamed "Full-cost margin". The no-margin warning now says whether lifting still beats cancelling.
+- 2026-11-21: Manual price notice uses the older of the TTF and JKM "as of" dates and the viewer's UTC date; amber with a "Check prices:" label after 7 days, so the meaning is not colour alone.
+- 2026-11-21: The price notice renders only after the island mounts. Reason: Preact hydration does not patch attributes, so a server-rendered notice kept its non-amber class when the viewer's date differed from the build date.

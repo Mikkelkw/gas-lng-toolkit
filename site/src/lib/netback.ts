@@ -50,12 +50,14 @@ export interface RouteResult {
   shippingCost: number; // $/MMBtu delivered
   boilOffCost: number; // $/MMBtu delivered
   netback: number; // $/MMBtu, FOB
-  margin: number; // $/MMBtu, netback minus cost of supply
+  margin: number; // $/MMBtu, full-cost margin: netback minus cost of supply
+  liftMargin: number; // $/MMBtu, lift/cancel margin: netback minus feedgas cost (fee sunk)
 }
 
 export interface NetbackResult {
   ttfUsd: number;
   costOfSupply: number;
+  feedgasCost: number;
   routes: RouteResult[];
   best: RouteResult;
   europe: RouteResult;
@@ -80,6 +82,11 @@ export function voyageDays(distanceNm: number, speedKnots: number): number {
 /** Cost of supply at FOB: feedgas multiplier x HH + liquefaction fee. */
 export function costOfSupply(i: Pick<NetbackInputs, 'henryHub' | 'feedgasMultiplier' | 'liquefactionFee'>): number {
   return (i.feedgasMultiplier / 100) * i.henryHub + i.liquefactionFee;
+}
+
+/** Feedgas cost: feedgas multiplier x HH. The variable cost of lifting a cargo once the fee is sunk. */
+export function feedgasCost(i: Pick<NetbackInputs, 'henryHub' | 'feedgasMultiplier'>): number {
+  return (i.feedgasMultiplier / 100) * i.henryHub;
 }
 
 function canalFeePerTransit(canal: Canal, i: NetbackInputs): number {
@@ -120,6 +127,7 @@ export function routeNetback(route: Route, i: NetbackInputs): RouteResult {
     boilOffCost,
     netback,
     margin: netback - costOfSupply(i),
+    liftMargin: netback - feedgasCost(i),
   };
 }
 
@@ -160,6 +168,7 @@ export function computeNetbacks(i: NetbackInputs, routes: Route[]): NetbackResul
   return {
     ttfUsd: ttfToUsd(i.ttf, i.eurusd),
     costOfSupply: costOfSupply(i),
+    feedgasCost: feedgasCost(i),
     routes: results,
     best: maxBy(results, (r) => r.netback),
     europe,

@@ -2,6 +2,7 @@
 /** Netback formulas, simplifications and the sourced assumptions table. Used on the tool page and /methodology. */
 import { assumptionItems, assumptionsVerified, defaultRoutes } from '../lib/assumptions';
 import { overlayMarket, type MarketFile } from '../lib/market';
+import { MARGIN_EXPLAINER } from '../lib/netbackText';
 
 interface Props {
   id?: string;
@@ -26,7 +27,8 @@ const fmtValue = (v: number) => v.toLocaleString('en-GB', { maximumFractionDigit
     <li><strong>Boil-off cost</strong> = loaded MMBtu × boil-off rate × laden days × destination price ÷ delivered MMBtu</li>
     <li><strong>FOB netback</strong> = destination price − shipping cost − boil-off cost</li>
     <li><strong>Cost of supply</strong> = feedgas multiplier × Henry Hub + liquefaction fee</li>
-    <li><strong>Margin</strong> = FOB netback − cost of supply</li>
+    <li><strong>Full-cost margin</strong> = FOB netback − cost of supply</li>
+    <li><strong>Lift/cancel margin</strong> = FOB netback − feedgas multiplier × Henry Hub. {MARGIN_EXPLAINER}</li>
     <li><strong>Arb</strong> = best Asia netback − Europe netback</li>
     <li>
       <strong>Breakeven JKM</strong>: each Asia netback is linear in JKM, so the breakeven is solved exactly. It is the lowest JKM at which any

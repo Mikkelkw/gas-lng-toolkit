@@ -96,3 +96,9 @@
 - Attribution: GIE AGSI+, GIE ALSI and Open-Meteo (CC BY 4.0, linked) under the storage chart; EIA and ECB under the netback charts; data sources table on /methodology.
 - No licensed price data fetched or stored (code search clean).
 - Mobile: every live page checked at 360px and 390px, no horizontal scroll, no console errors. Reference tables set to scroll inside their frame on phones.
+
+### Post-launch changes (owner request, 21 Nov 2026)
+- Storage: likely range on the headline and in the preset table, from the back-test errors in model.json, scaled by days left to 31 March. One-line note that the model under-predicted withdrawals in 2025/26. No bias correction. Method explained on the tool page and /methodology.
+- Netback: new "Lift/cancel margin" column (netback minus feedgas cost, fee sunk) next to the renamed "Full-cost margin"; one-sentence explainer under the table and in the method section on both pages; warning says whether lifting still beats cancelling.
+- Netback: "Prices last updated" notice in the Prices inputs; amber with a "Check prices:" label when the manual TTF/JKM defaults are more than 7 days old.
+- Tests: Vitest 74 passed (14 new). Checked in a local build at 1280px and 390px, including the amber state with a faked date.
