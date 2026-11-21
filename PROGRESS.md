@@ -102,3 +102,11 @@
 - Netback: new "Lift/cancel margin" column (netback minus feedgas cost, fee sunk) next to the renamed "Full-cost margin"; one-sentence explainer under the table and in the method section on both pages; warning says whether lifting still beats cancelling.
 - Netback: "Prices last updated" notice in the Prices inputs; amber with a "Check prices:" label when the manual TTF/JKM defaults are more than 7 days old.
 - Tests: Vitest 74 passed (14 new). Checked in a local build at 1280px and 390px, including the amber state with a faked date.
+
+### v1.1 section 11.1 and 11.2: redesign and landing page (21 Nov 2026)
+- Status: built, deployed, awaiting checkpoint review (11.4). Section 11.3 (custom domain) waits for the owner's confirmation.
+- 11.1: maritime chart room palette as CSS tokens; navy header and footer with a faint chart grid and brass rules; paper content; self-hosted Fraunces, Inter and IBM Plex Mono; compass mark logo and favicon; tool, prose and table styles restyled; Plot charts restyled (teal series, brass highlights, navy axes, paper background).
+- 11.2: new landing page: hero with an original Natural Earth route map (four routes from Sabine Pass, drawn in, no motion when reduced motion is set), live strip (EU storage, best destination and arb, projected 31 March under Normal, each dated), three cards with small graphics, how it works, who it is for, about snippet, footer.
+- Tests: Vitest 80 passed (6 new for the live figures), pytest 56 passed, astro check clean.
+- Lighthouse mobile, local build: home 100/100/100/100; netback 98/100/100/100; storage 99/100/100/100; primer, methodology and about 100 in all four.
+- All pages checked at 390 px and 1280 px: no horizontal scroll, no console errors.

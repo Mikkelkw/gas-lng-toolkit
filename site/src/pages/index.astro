@@ -1,45 +1,197 @@
 ---
 import Base from '../layouts/Base.astro';
-import { PAGES } from '../lib/pages';
-import '../styles/prose.css';
+import RouteMap from '../components/RouteMap.astro';
+import model from '../../../data/model.json';
+import { assumptionItems, defaultRoutes } from '../lib/assumptions';
+import { netbackFigure, projectionFigure, storageFigure, type LiveFigure } from '../lib/home';
+import { overlayMarket, type MarketFile } from '../lib/market';
+import { AUTHOR, PAGES } from '../lib/pages';
+import { buildStoragePayload, type ModelFile, type StatusFile, type StorageFile, type WeatherFile } from '../lib/storagePayload';
 
-interface Dated { updated?: string; asOf?: string; full_pct?: number[] }
-const files = import.meta.glob<Dated>('../../public/data/{storage,market}.json', { eager: true, import: 'default' });
-const pick = (n: string) => Object.entries(files).find(([k]) => k.endsWith(`/${n}.json`))?.[1] ?? null;
-const storage = pick('storage');
-const market = pick('market');
-const fmt = (iso?: string) =>
-  iso ? new Date(iso.length === 10 ? `${iso}T00:00:00Z` : iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : null;
-const updated = fmt([storage?.updated, market?.updated].filter(Boolean).sort().at(-1));
-const full = storage?.full_pct?.at(-1);
+const files = import.meta.glob<unknown>('../../public/data/{storage,weather,status,market}.json', { eager: true, import: 'default' });
+const pick = <T,>(name: string) => (Object.entries(files).find(([k]) => k.endsWith(`/${name}.json`))?.[1] ?? null) as T | null;
+const storage = pick<StorageFile>('storage');
+const weather = pick<WeatherFile>('weather');
+const payload = storage && weather ? buildStoragePayload(storage, weather, model as unknown as ModelFile, pick<StatusFile>('status')) : null;
+const items = overlayMarket(assumptionItems, pick<MarketFile>('market'));
+
+const live: (LiveFigure & { href: string; numeric: boolean })[] = [
+  { ...storageFigure(storage), href: PAGES.storage.path, numeric: true },
+  { ...netbackFigure(items, defaultRoutes), href: PAGES.netback.path, numeric: false },
+  { ...projectionFigure(payload), href: PAGES.storage.path, numeric: true },
+];
+
+const sources = ['GIE AGSI+', 'GIE ALSI', 'EIA', 'ECB', 'Open-Meteo'];
 ---
-<Base page="home">
-  <div class="prose home">
-    <h1>LNG Flow Tools</h1>
-    <p class="lead">Two free tools for gas and LNG traders: where should a US cargo go, and how much gas will Europe have left by 31 March?</p>
-  </div>
+<Base page="home" full>
+  <section class="hero dark" aria-labelledby="hero-title">
+    <div class="wrap">
+      <h1 id="hero-title">Where LNG flows, and why.</h1>
+      <p class="sub">
+        Free tools to see where a US LNG cargo earns the most, and how much gas Europe will have left on 31 March. Built
+        on public data, refreshed daily.
+      </p>
+      <div class="cta">
+        <a class="btn-cta primary" href={PAGES.netback.path}>LNG netback calculator</a>
+        <a class="btn-cta" href={PAGES.storage.path}>EU gas storage forecast</a>
+      </div>
+      <RouteMap />
 
-  <div class="cards">
-    <a class="card" href={PAGES.netback.path}>
-      <h2>LNG netback and arbitrage calculator</h2>
-      <p>Compare FOB netbacks for a US Gulf Coast cargo to Europe (TTF) and North Asia (JKM) via Panama, Suez or the Cape. See how far the arb is from flipping.</p>
-      <p class="stat">Henry Hub from EIA, EUR/USD from ECB, refreshed daily.</p>
-      <span class="go">Open the calculator</span>
-    </a>
-    <a class="card" href={PAGES.storage.path}>
-      <h2>EU gas storage forecast</h2>
-      <p>Project EU storage to 31 March under cold weather, LNG shortfall, supply disruption and demand response scenarios.</p>
-      <p class="stat">{full !== undefined ? `EU storage ${full.toFixed(1)}% full on gas day ${fmt(storage?.asOf)} (GIE AGSI+).` : 'Daily data from GIE AGSI+ and ALSI.'}</p>
-      <span class="go">Open the stress test</span>
-    </a>
-  </div>
+      <h2 class="sr-only" id="live-title">Latest figures</h2>
+      <ul class="live" aria-labelledby="live-title">
+        {live.map((f) => (
+          <li>
+            <a href={f.href}>
+              <span class="live-label">{f.label}</span>
+              <span class={`live-value${f.numeric ? ' figure' : ''}`}>{f.value}</span>
+              <span class="live-detail">{f.detail}</span>
+              {f.dated && <span class="live-date">{f.dated}</span>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
 
-  <div class="prose">
-    <p><a href={PAGES.learn.path}>New to LNG? Start with the basics</a>: a 10-minute primer on netbacks, arbitrage and European gas storage.</p>
+  <section class="wrap block" aria-labelledby="tools-title">
+    <h2 id="tools-title">The tools</h2>
+    <div class="cards">
+      <a class="card" href={PAGES.netback.path}>
+        <svg class="card-art" viewBox="0 0 120 56" aria-hidden="true">
+          <rect x="0" y="6" width="104" height="8" rx="2" fill="#2A9D8F" />
+          <rect x="0" y="19" width="94" height="8" rx="2" fill="#A9B2BA" />
+          <rect x="0" y="32" width="90" height="8" rx="2" fill="#A9B2BA" />
+          <rect x="0" y="45" width="92" height="8" rx="2" fill="#A9B2BA" />
+          <path d="M108 3v14" stroke="#C8A24A" stroke-width="2" />
+        </svg>
+        <h3>LNG netback calculator</h3>
+        <p>Compare what a US Gulf cargo earns in Europe and North Asia, via Panama, Suez or the Cape.</p>
+        <span class="go">Open the calculator</span>
+      </a>
+      <a class="card" href={PAGES.storage.path}>
+        <svg class="card-art" viewBox="0 0 120 56" aria-hidden="true">
+          <path d="M2 8 C30 6 50 14 70 26 S100 44 118 46 L118 54 C96 54 74 44 54 34 S22 18 2 18Z" fill="#12355B" fill-opacity="0.14" />
+          <path d="M2 10 C24 9 40 14 58 24" fill="none" stroke="#2A9D8F" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M58 24 C78 36 96 44 116 47" fill="none" stroke="#2A9D8F" stroke-width="2" stroke-dasharray="5 4" />
+          <circle cx="116" cy="47" r="3.5" fill="#C8A24A" stroke="#0B1F33" stroke-width="1.2" />
+        </svg>
+        <h3>EU gas storage forecast</h3>
+        <p>Project EU storage to 31 March and stress it with cold weather, LNG shortfalls and supply cuts.</p>
+        <span class="go">Open the stress test</span>
+      </a>
+      <a class="card" href={PAGES.learn.path}>
+        <svg class="card-art" viewBox="0 0 120 56" aria-hidden="true">
+          <path d="M0 14H120M0 28H120M0 42H120M20 0V56M40 0V56M60 0V56M80 0V56M100 0V56" stroke="#DCD5C6" stroke-width="1" />
+          <circle cx="60" cy="28" r="22" fill="none" stroke="#C8A24A" stroke-width="1.5" />
+          <path d="M60 8 64 28 60 48 56 28Z" fill="#0B1F33" />
+          <path d="M40 28 60 24 80 28 60 32Z" fill="#C8A24A" />
+        </svg>
+        <h3>Learn the basics</h3>
+        <p>A 10-minute primer on netbacks, the arb, shipping and European gas storage.</p>
+        <span class="go">Read the primer</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="wrap"><hr class="rule" /></div>
+
+  <section class="wrap block" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
+    <ol class="steps">
+      <li>
+        <h3>Public data, refreshed daily</h3>
+        <p>Storage and LNG send-out from GIE, Henry Hub from the EIA, EUR/USD from the ECB and temperatures from Open-Meteo. Each update is checked first; if a check fails, the last good data stays.</p>
+        <ul class="tags" aria-label="Data sources">
+          {sources.map((s) => <li>{s}</li>)}
+        </ul>
+      </li>
+      <li>
+        <h3>Transparent models</h3>
+        <p>Every formula, default and source is on the <a href={PAGES.methodology.path}>methodology</a> page, with the storage model's fit and back-test. The code is open.</p>
+      </li>
+      <li>
+        <h3>You change the assumptions</h3>
+        <p>Change prices, freight, weather or supply and the result updates at once. A link saves your netback scenario.</p>
+      </li>
+    </ol>
+  </section>
+
+  <div class="wrap"><hr class="rule" /></div>
+
+  <section class="wrap block" aria-labelledby="who-title">
+    <h2 id="who-title">Who it is for</h2>
+    <ul class="who">
+      <li>
+        <h3>Traders and analysts</h3>
+        <p>Quick checks on the US cargo arb and the winter storage balance, with every assumption in view.</p>
+      </li>
+      <li>
+        <h3>Students and career switchers</h3>
+        <p>See how netbacks, shipping and storage fit together. Start with the <a href={PAGES.learn.path}>primer</a>.</p>
+      </li>
+      <li>
+        <h3>Anyone following European gas</h3>
+        <p>A plain answer to how full storage will be on 31 March, and what could change it.</p>
+      </li>
+    </ul>
+  </section>
+
+  <div class="wrap"><hr class="rule" /></div>
+
+  <section class="wrap block about" aria-labelledby="about-title">
+    <h2 id="about-title">About</h2>
     <p>
-      Every number on this site comes from a public source or a stated assumption. See the <a href={PAGES.methodology.path}>methodology</a>.
-      No licensed price data is used.
+      Built by {AUTHOR} as a free, non-commercial project to show how gas and LNG markets fit together, with numbers
+      anyone can check. No ads, no login, no tracking. <a href={PAGES.about.path}>More about the project</a>.
     </p>
-    {updated && <p class="muted small">Data last updated {updated}.</p>}
-  </div>
+  </section>
 </Base>
+
+<style>
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .hero { padding: 40px 0 32px; }
+  .hero h1 { color: var(--paper); font-size: clamp(2.2rem, 6vw, 3.6rem); margin: 0 0 12px; letter-spacing: -0.015em; }
+  .sub { font-size: 1.15rem; max-width: 60ch; margin: 0 0 20px; color: var(--on-dark); }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+  .btn-cta { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 18px; border-radius: 4px; font-weight: 600; text-decoration: none; border: 1px solid var(--on-dark-muted); color: var(--on-dark); }
+  .btn-cta.primary { background: var(--brass); border-color: var(--brass); color: var(--navy); }
+  .btn-cta:hover { border-color: var(--brass); }
+  .btn-cta.primary:hover { filter: brightness(1.08); }
+
+  .live { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .live { grid-template-columns: repeat(3, 1fr); } }
+  .live a { display: flex; flex-direction: column; gap: 2px; height: 100%; padding: 14px 16px; background: var(--ocean); border-top: 2px solid var(--brass); border-radius: 0 0 4px 4px; text-decoration: none; color: var(--on-dark); }
+  .live a:hover { background: #17406b; }
+  .live-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--on-dark-muted); }
+  .live-value { font-family: var(--serif); font-weight: 600; font-size: 1.6rem; color: var(--brass); line-height: 1.2; margin: 2px 0; }
+  .live-value.figure { font-family: var(--mono); font-weight: 500; }
+  .live-detail { font-size: 0.9rem; }
+  .live-date { font-size: 0.8rem; color: var(--on-dark-muted); margin-top: 4px; }
+
+  .block { padding-top: 36px; padding-bottom: 36px; }
+  .block h2 { font-size: 1.6rem; margin: 0 0 16px; }
+  .block h3 { font-size: 1.15rem; margin: 0 0 6px; }
+
+  .cards { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+  .card { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 6px; padding: 18px; background: var(--card); color: var(--ink); text-decoration: none; }
+  .card:hover { border-color: var(--brass); box-shadow: 0 2px 12px rgba(11, 31, 51, 0.08); }
+  .card-art { width: 120px; height: 56px; margin-bottom: 14px; }
+  .card p { margin: 0 0 12px; flex: 1; }
+  .go { font-weight: 600; color: var(--ocean); text-decoration: underline; text-decoration-color: var(--brass); text-underline-offset: 3px; }
+
+  .steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+  .steps > li { counter-increment: step; }
+  .steps > li::before { content: counter(step, decimal-leading-zero); display: block; font-family: var(--mono); font-size: 0.85rem; color: var(--navy); border-top: 2px solid var(--brass); padding-top: 6px; width: 2.5rem; margin-bottom: 8px; }
+  .steps p { margin: 0 0 10px; }
+  .tags { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { font-size: 0.8rem; border: 1px solid #848d97; border-radius: 3px; padding: 2px 8px; color: var(--ink); background: var(--card); }
+
+  .who { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .who { grid-template-columns: repeat(3, 1fr); } }
+  .who p { margin: 0; }
+  .about p { max-width: 70ch; margin: 0; font-size: 1.05rem; }
+  .block:last-child { padding-bottom: 56px; }
+</style>

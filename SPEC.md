@@ -168,3 +168,46 @@ Claude Code works through these in order, committing after each step, and only s
 ## 9. Out of scope for v1
 
 User accounts, email newsletter, licensed price feeds, oil tools, real-time data, comments.
+
+## 11. v1.1: Redesign, landing page and custom domain
+
+### 11.1 Visual direction: "maritime chart room"
+The site should feel like a modern ship's chart room: calm, precise, nautical, data-first. Replaces the "dark-on-light, one accent" style in section 2.
+
+- **Palette** (check WCAG AA contrast for all text):
+  - Deep navy `#0B1F33` (header, hero, footer)
+  - Ocean blue `#12355B` (panels on dark sections)
+  - Chart paper `#F4F1EA` (main content background)
+  - Ink `#1B2733` (body text on light)
+  - Brass `#C8A24A` (accents, highlights, active states)
+  - Sea teal `#2A9D8F` (primary data series)
+  - Signal red `#C0392B` (warnings only)
+- **Typography** (self-hosted, no external font CDNs):
+  - Headings: an editorial serif (e.g. Fraunces or Source Serif 4)
+  - Body: a clean sans (e.g. Inter)
+  - Numbers and inputs: tabular monospace (e.g. IBM Plex Mono), so figures line up
+- **Motifs** (subtle, never decorative clutter):
+  - Faint latitude/longitude graticule and chart grid lines as background texture on dark sections
+  - An original, simplified SVG world map showing the four routes from Sabine Pass: to Rotterdam, and to Tokyo via Panama, Suez and the Cape, as dashed route lines. Use public-domain map data (Natural Earth) only.
+  - Thin brass rules as section dividers; small nautical touches (e.g. a minimal compass mark in the logo) are fine, kitsch is not
+- **Charts**: restyle all Observable Plot charts to the palette (teal series, brass highlights, navy axes, paper background).
+- **Motion**: gentle only (e.g. route lines drawing in on the hero), and fully disabled under `prefers-reduced-motion`.
+- **Quality bar**: Lighthouse at least 95 in all four categories on mobile; no new heavy dependencies; mobile-first.
+
+### 11.2 Landing page (replaces the current home page)
+Sections, top to bottom:
+1. **Hero** on deep navy with the route map: headline (e.g. "Where LNG flows, and why."), one-sentence subline explaining the site, two buttons: "LNG netback calculator" and "EU gas storage forecast".
+2. **Live strip**: three live figures from the latest data, each with its date: EU storage % full; best destination for a US cargo at default inputs and the arb in $/MMBtu; projected 31 March storage under the Normal scenario.
+3. **Three cards**: Netback calculator, Storage forecast, Learn the basics (primer), each with a one-line description and a small illustrative graphic.
+4. **How it works**: three steps: public data refreshed daily (with source logos as text, not images), transparent models, you change the assumptions.
+5. **Who it is for**: traders and analysts, students and career switchers, anyone following European gas.
+6. **About snippet**: one or two sentences on who built it and why, linking to /about.
+7. Footer as today.
+
+### 11.3 Custom domain
+- The owner buys the domain via Cloudflare Registrar and attaches it to the Pages project in the Cloudflare dashboard (the deploy token has no DNS rights).
+- Then: set the custom domain as the canonical URL everywhere (site config, canonical tags, Open Graph, sitemap, robots.txt), and 301-redirect all `*.pages.dev` requests to the same path on the custom domain (e.g. with a Pages Functions middleware checking the host). Keep query strings so shared scenario links work.
+- Domain: `lngtoolkit.com` (bought 2026-11-21). Also add `www.lngtoolkit.com` redirecting to the apex. As part of 11.3, rename the site from "LNG Flow Tools" to "LNG Toolkit" everywhere (titles, header, footer, logo, README, SPEC.md, CLAUDE.md). Build 11.1 and 11.2 first; do 11.3 only once the owner confirms the domain is attached.
+
+### 11.4 Process
+Work through 11.1 and 11.2 without stopping, deploy, then [CHECKPOINT: send the live URL and screenshots of the landing page at desktop and mobile width]. Then wait for the domain confirmation before 11.3.

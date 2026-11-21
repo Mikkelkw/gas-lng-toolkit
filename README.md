@@ -23,6 +23,10 @@ Every number comes from a documented public source or a documented assumption. N
 cd site && npm install && npm run dev      # site
 npm test                                    # Vitest
 python -m pytest                            # pipeline tests, from repo root
+node scripts/build-map.mjs                  # from site/: rebuild the hero route map
 ```
+
+The hero map uses Natural Earth 1:110m land (public domain, via the `world-atlas` package). The script writes
+`site/public/map/land.svg` and `site/src/data/route-map.json`; both are committed, so a normal build does not need it.
 
 Built by Mikkel Wahl. Not investment advice.

@@ -1,0 +1,73 @@
+---
+/**
+ * Hero map: the four routes from Sabine Pass as dashed lines on a Mercator chart.
+ * Geometry from scripts/build-map.mjs (Natural Earth land, simplified routes).
+ * Route lines draw in once; no motion under prefers-reduced-motion.
+ */
+import map from '../data/route-map.json';
+
+const COLOR = { ttf: '#2A9D8F', jkm: '#C8A24A' } as const;
+const DELAY: Record<string, number> = { nwe: 0, 'asia-panama': 0.35, 'asia-suez': 0.7, 'asia-cape': 1.05 };
+const label = 'Map of the four LNG routes from Sabine Pass on the US Gulf Coast: direct to Rotterdam, and to Tokyo via the Panama Canal, the Suez Canal and the Cape of Good Hope.';
+---
+<figure class="route-map">
+  <svg viewBox={`0 0 ${map.width} ${map.height}`} role="img" aria-label={label} preserveAspectRatio="xMidYMid meet">
+    <image href="/map/land.svg" x="0" y="0" width={map.width} height={map.height} />
+    <path d={map.graticule} class="grat" />
+    <defs>
+      {map.routes.map((r) => (
+        <mask id={`m-${r.id}`} maskUnits="userSpaceOnUse" x="0" y="0" width={map.width} height={map.height}>
+          <path d={r.d} class="draw" pathLength="1" style={`animation-delay:${DELAY[r.id] ?? 0}s`} />
+        </mask>
+      ))}
+    </defs>
+    {map.routes.map((r) => (
+      <path d={r.d} class="route" stroke={COLOR[r.market as 'ttf' | 'jkm']} mask={`url(#m-${r.id})`} />
+    ))}
+    {map.via.map((v) => (
+      <text x={v.x + v.dx} y={v.y + v.dy} text-anchor={v.anchor} class="map-label via">{v.label}</text>
+    ))}
+    {map.ports.map((p) => (
+      <g>
+        <circle cx={p.x} cy={p.y} r="3.2" class="port" />
+        <text x={p.x + p.dx} y={p.y + p.dy} text-anchor={p.anchor} class="map-label">{p.label}</text>
+      </g>
+    ))}
+  </svg>
+  <figcaption>
+    <ul class="map-key">
+      <li><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke={COLOR.ttf} stroke-width="2.5" stroke-dasharray="6 4" /></svg>Europe (TTF): Sabine Pass to Rotterdam, direct</li>
+      <li><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke={COLOR.jkm} stroke-width="2.5" stroke-dasharray="6 4" /></svg>North Asia (JKM): to Tokyo via Panama, Suez or the Cape</li>
+    </ul>
+    <span class="map-note">Routes simplified. Tokyo appears at both edges. Map data: Natural Earth (public domain).</span>
+  </figcaption>
+</figure>
+
+<style>
+  .route-map { margin: 0; }
+  .route-map > svg { display: block; width: 100%; height: auto; overflow: hidden; }
+  .map-key svg { flex: none; }
+  /* Full bleed on phones: every pixel of width helps a wide map. */
+  @media (max-width: 600px) { .route-map > svg { width: calc(100% + 32px); margin: 0 -16px; max-width: none; } }
+  .grat { fill: none; stroke: rgba(200, 162, 74, 0.18); stroke-width: 0.6; }
+  .route { fill: none; stroke-width: 2.2; stroke-dasharray: 6 4; stroke-linecap: round; }
+  .draw { fill: none; stroke: #fff; stroke-width: 10; stroke-dasharray: 1; stroke-dashoffset: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .draw { animation: draw 2.6s cubic-bezier(0.45, 0, 0.2, 1) both; }
+  }
+  @keyframes draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+  .port { fill: #f4f1ea; stroke: #0b1f33; stroke-width: 1.2; }
+  .map-label { font-family: var(--sans); font-size: 8.5px; fill: #f4f1ea; paint-order: stroke; stroke: #0b1f33; stroke-width: 2.5px; stroke-linejoin: round; }
+  .map-label.via { fill: #b8c4d0; font-size: 7.5px; font-style: italic; }
+  /* On phones the map is too small for legible labels; the key below names every route and port. */
+  @media (max-width: 600px) {
+    .map-label { display: none; }
+  }
+  figcaption { margin-top: 10px; font-size: 0.85rem; color: var(--on-dark-muted); }
+  .map-key { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 20px; color: var(--on-dark); }
+  .map-key li { display: inline-flex; align-items: center; gap: 8px; }
+  .map-note { font-size: 0.8rem; }
+</style>

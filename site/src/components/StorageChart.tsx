@@ -1,12 +1,13 @@
 /** Storage % full chart: this winter, scenario projection, previous winters' range and average. */
 import * as Plot from '@observablehq/plot';
 import type { PathPoint, RangePoint } from '../lib/storage';
-import { COLORS } from './NetbackCharts';
+import { COLORS, PLOT_STYLE } from './NetbackCharts';
 import PlotFigure from './PlotFigure';
 
-const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-const BAND = '#d5dce1';
-const AVG = '#7d8992';
+/** Previous winters: ocean-blue band and line, so this winter's teal stands out. */
+const BAND = COLORS.ocean;
+const BAND_OPACITY = 0.14;
+const AVG = COLORS.ocean;
 
 const toDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const fmtDay = (iso: string) => toDate(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -42,7 +43,7 @@ export default function StorageChart({ actual, projection, range, rangeLabel }: 
           marginLeft: 40,
           marginRight: width < 520 ? 44 : 64,
           marginTop: 30,
-          style: { fontFamily: FONT, fontSize: '13px', color: COLORS.ink },
+          style: PLOT_STYLE,
           x: { type: 'utc', label: null, ticks: width < 520 ? 3 : 6, tickFormat: (d: Date) => d.toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' }) },
           y: { domain: [0, 100], label: '% full', labelAnchor: 'top', grid: true, ticks: 5 },
           marks: [
@@ -52,19 +53,20 @@ export default function StorageChart({ actual, projection, range, rangeLabel }: 
               y1: 'min',
               y2: 'max',
               fill: BAND,
-              fillOpacity: 0.7,
+              fillOpacity: BAND_OPACITY,
             }),
             Plot.lineY(range.filter((r) => Number.isFinite(r.avg)), {
               x: (r: RangePoint) => toDate(r.day),
               y: 'avg',
               stroke: AVG,
               strokeWidth: 1.5,
+              strokeOpacity: 0.75,
             }),
             Plot.lineY(proj, { x: (p) => toDate(p.day), y: 'full', stroke: COLORS.accent, strokeWidth: 2, strokeDasharray: '5,4' }),
             Plot.lineY(actual, { x: (p) => toDate(p.day), y: 'full', stroke: COLORS.accent, strokeWidth: 2.5 }),
             ...(end
               ? [
-                  Plot.dot([end], { x: (p: PathPoint) => toDate(p.day), y: 'full', r: 4, fill: COLORS.accent, stroke: '#fff', strokeWidth: 2 }),
+                  Plot.dot([end], { x: (p: PathPoint) => toDate(p.day), y: 'full', r: 5, fill: COLORS.brass, stroke: COLORS.navy, strokeWidth: 1.5 }),
                   Plot.text([end], {
                     x: (p: PathPoint) => toDate(p.day),
                     y: 'full',
@@ -115,11 +117,11 @@ export function StorageLegend({ rangeLabel, showProjection }: { rangeLabel: stri
         </li>
       )}
       <li>
-        <svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" stroke={AVG} stroke-width="1.5" /></svg>
+        <svg width="22" height="10" aria-hidden="true"><line x1="0" y1="5" x2="22" y2="5" stroke={AVG} stroke-width="1.5" stroke-opacity="0.75" /></svg>
         Average {rangeLabel}
       </li>
       <li>
-        <svg width="16" height="10" aria-hidden="true"><rect width="16" height="10" rx="2" fill={BAND} /></svg>
+        <svg width="16" height="10" aria-hidden="true"><rect width="16" height="10" rx="2" fill={BAND} fill-opacity={BAND_OPACITY} /></svg>
         Range {rangeLabel}
       </li>
     </ul>

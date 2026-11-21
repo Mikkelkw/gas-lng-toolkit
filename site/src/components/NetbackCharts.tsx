@@ -5,15 +5,21 @@ import type { NetbackResult, SensitivityPoint } from '../lib/netback';
 import type { DisplayRoute } from '../lib/netbackText';
 import PlotFigure from './PlotFigure';
 
+/** Chart palette (SPEC 11.1): teal series, brass highlights, navy axes, paper background. */
 export const COLORS = {
-  accent: '#0b5e63',
-  rest: '#a9b4bc',
-  ink: '#1a1f24',
-  muted: '#5b6670',
-  grid: '#e6ebef',
+  accent: '#2A9D8F', // teal: the data series
+  brass: '#C8A24A', // highlights: current value, breakeven, end point
+  rest: '#A9B2BA', // other routes
+  ink: '#1B2733',
+  navy: '#0B1F33', // axes
+  muted: '#4E5A66',
+  grid: '#E2DBCD',
+  ocean: '#12355B',
+  surface: '#F4F1EA',
 };
 
-const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+export const FONT = 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+export const PLOT_STYLE = { fontFamily: FONT, fontSize: '13px', color: COLORS.navy, background: 'transparent', fontVariantNumeric: 'tabular-nums' };
 
 export function NetbackBars({ res }: { res: NetbackResult }) {
   const data = res.routes.map((r) => ({
@@ -34,7 +40,7 @@ export function NetbackBars({ res }: { res: NetbackResult }) {
           height: 44 * data.length + 36,
           marginLeft: 112,
           marginRight: 92,
-          style: { fontFamily: FONT, fontSize: '13px', color: COLORS.ink },
+          style: PLOT_STYLE,
           x: { domain: [0, xMax], label: null, grid: true, ticks: width < 520 ? 3 : 5, tickFormat: (d: number) => `$${d}` },
           y: { label: null, domain: data.map((d) => d.label), tickSize: 0, padding: 0.35 },
           marks: [
@@ -45,7 +51,7 @@ export function NetbackBars({ res }: { res: NetbackResult }) {
               fill: (d) => (d.best ? COLORS.accent : COLORS.rest),
               rx: 4,
             }),
-            Plot.ruleX([0], { stroke: COLORS.muted }),
+            Plot.ruleX([0], { stroke: COLORS.navy }),
             ...[true, false].map((isBest) =>
               Plot.text(
                 data.filter((d) => d.best === isBest),
@@ -103,7 +109,7 @@ export function ArbSensitivity({
           marginRight: 20,
           marginTop: 28,
           marginBottom: 46,
-          style: { fontFamily: FONT, fontSize: '13px', color: COLORS.ink },
+          style: PLOT_STYLE,
           x: {
             label: 'Charter rate ($/day)',
             labelAnchor: 'center',
@@ -115,8 +121,8 @@ export function ArbSensitivity({
           y: { label: 'Arb, best Asia minus Europe ($/MMBtu)', labelAnchor: 'top', domain: [yMin - pad, yMax + pad], grid: true, ticks: 6 },
           marks: [
             Plot.gridY({ stroke: COLORS.grid, strokeOpacity: 1 }),
-            Plot.ruleY([0], { stroke: COLORS.muted }),
-            Plot.ruleX([currentCharter], { stroke: COLORS.muted, strokeWidth: 1 }),
+            Plot.ruleY([0], { stroke: COLORS.navy }),
+            Plot.ruleX([currentCharter], { stroke: COLORS.brass, strokeWidth: 2, strokeDasharray: '4,3' }),
             // Pinned to the top of the frame so it never meets the breakeven label on the zero line.
             Plot.text([currentCharter], {
               x: (d: number) => d,
@@ -131,7 +137,7 @@ export function ArbSensitivity({
             ...(breakeven === null
               ? []
               : [
-                  Plot.dot([{ x: breakeven, y: 0 }], { x: 'x', y: 'y', r: 5, fill: COLORS.accent, stroke: '#fff', strokeWidth: 2 }),
+                  Plot.dot([{ x: breakeven, y: 0 }], { x: 'x', y: 'y', r: 5.5, fill: COLORS.brass, stroke: COLORS.navy, strokeWidth: 1.5 }),
                   Plot.text([{ x: breakeven, y: 0 }], {
                     x: 'x',
                     y: 'y',
@@ -145,7 +151,7 @@ export function ArbSensitivity({
                   }),
                 ]),
             Plot.ruleX(points, Plot.pointerX({ x: 'charterRate', stroke: COLORS.muted, strokeOpacity: 0.5 })),
-            Plot.dot(points, Plot.pointerX({ x: 'charterRate', y: 'arb', r: 4, fill: COLORS.accent, stroke: '#fff', strokeWidth: 2 })),
+            Plot.dot(points, Plot.pointerX({ x: 'charterRate', y: 'arb', r: 4, fill: COLORS.accent, stroke: COLORS.surface, strokeWidth: 2 })),
             Plot.tip(
               points,
               Plot.pointerX({
