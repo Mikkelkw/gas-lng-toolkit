@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { PAGES, REDIRECTS, SITE_NAME, canonical } from './pages';
+import { PAGES, REDIRECTS, SITE_NAME, canonical, websiteJsonLd } from './pages';
 
 const pages = Object.values(PAGES);
 
@@ -30,5 +30,30 @@ describe('page metadata', () => {
       expect(rules).toContain(`${from} ${to} 301`);
       expect(rules).toContain(`${from}/ ${to} 301`);
     }
+  });
+});
+
+describe('structured data', () => {
+  it('home page WebSite JSON-LD names the site and its canonical URL', () => {
+    expect(JSON.parse(websiteJsonLd())).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'LNG Toolkit',
+      url: 'https://lngtoolkit.com/',
+    });
+  });
+});
+
+describe('icons', () => {
+  const files = ['favicon.svg', 'favicon.ico', 'favicon-48.png', 'favicon-96.png', 'favicon-192.png', 'favicon-512.png', 'apple-touch-icon.png', 'icon-maskable-512.png', 'site.webmanifest'];
+  it('every icon file exists and robots.txt blocks none of them', () => {
+    for (const f of files) expect(existsSync(`public/${f}`), f).toBe(true);
+    const robots = readFileSync('public/robots.txt', 'utf-8');
+    expect(robots).not.toMatch(/^Disallow:\s*\/\S*/m);
+  });
+  it('manifest icons point at files that exist', () => {
+    const m = JSON.parse(readFileSync('public/site.webmanifest', 'utf-8'));
+    expect(m.name).toBe(SITE_NAME);
+    for (const i of m.icons) expect(existsSync(`public${i.src}`), i.src).toBe(true);
   });
 });

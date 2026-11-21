@@ -76,3 +76,8 @@ export const REDIRECTS: [string, string][] = [
 export function canonical(path: string): string {
   return new URL(path, SITE_URL).toString();
 }
+
+/** WebSite structured data for the home page, so Google shows "LNG Toolkit" as the site name. */
+export function websiteJsonLd(): string {
+  return JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: `${SITE_URL}/` });
+}

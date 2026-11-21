@@ -5,7 +5,7 @@ import model from '../../../data/model.json';
 import { assumptionItems, defaultRoutes } from '../lib/assumptions';
 import { netbackFigure, projectionFigure, storageFigure, type LiveFigure } from '../lib/home';
 import { overlayMarket, type MarketFile } from '../lib/market';
-import { AUTHOR, PAGES } from '../lib/pages';
+import { AUTHOR, PAGES, websiteJsonLd } from '../lib/pages';
 import { buildStoragePayload, type ModelFile, type StatusFile, type StorageFile, type WeatherFile } from '../lib/storagePayload';
 
 const files = import.meta.glob<unknown>('../../public/data/{storage,weather,status,market}.json', { eager: true, import: 'default' });
@@ -24,6 +24,7 @@ const live: (LiveFigure & { href: string; numeric: boolean })[] = [
 const sources = ['GIE AGSI+', 'GIE ALSI', 'EIA', 'ECB', 'Open-Meteo'];
 ---
 <Base page="home" full>
+  <script is:inline type="application/ld+json" slot="head" set:html={websiteJsonLd()} />
   <section class="hero dark" aria-labelledby="hero-title">
     <div class="wrap">
       <h1 id="hero-title">Where LNG flows, and why.</h1>

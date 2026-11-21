@@ -118,3 +118,4 @@
 - Landing map: SVG title and description; place names moved to a static image so they are not page text.
 - Netback intro: "JKM-TTF spread".
 - Tests: Vitest 88 passed, pytest 56 passed, astro check clean. Lighthouse mobile (local): 97 to 100 in all categories on the changed pages.
+- 2026-11-21: Favicon set, web manifest and home-page WebSite JSON-LD added; deployed and checked live.

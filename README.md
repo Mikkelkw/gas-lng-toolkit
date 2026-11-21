@@ -24,6 +24,7 @@ cd site && npm install && npm run dev      # site
 npm test                                    # Vitest
 python -m pytest                            # pipeline tests, from repo root
 node scripts/build-map.mjs                  # from site/: rebuild the hero route map
+node scripts/build-icons.mjs                # from site/, after npm i --no-save sharp@0.34.5: rebuild favicons
 ```
 
 The hero map uses Natural Earth 1:110m land (public domain, via the `world-atlas` package). The script writes
