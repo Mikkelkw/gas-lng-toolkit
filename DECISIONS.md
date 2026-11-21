@@ -21,3 +21,8 @@ One line each: date, decision, reason.
 - 2026-11-21: URL updates live with replaceState, so the address bar is always the shareable scenario; "Copy link" copies it.
 - 2026-11-21: Breakeven charter rate shown rounded to the nearest $100/day; finer precision would be false precision.
 - 2026-11-21: Site is light-theme only, per SPEC "dark-on-light" visual style.
+- 2026-11-21: EUR/USD from the ECB's documented eurofxref-hist-90d.xml download, not the Data Portal API, whose docs were unavailable (HTTP 503).
+- 2026-11-21: Temperature basket: 16 cities in the 12 largest EU gas-consuming countries (91.4% of 2024 demand), country weight = Eurostat 2024 inland consumption share, split equally between cities where a country has two. Simplification noted in city_weights.json.
+- 2026-11-21: History starts 2015-10-01 (10 full winters before 2025/26). Daily refresh re-fetches 45 days to pick up revisions and merges onto stored JSON in site/public/data/.
+- 2026-11-21: Observed temperatures = Open-Meteo archive, with days after the archive end filled from the forecast API's past_days analysis.
+- 2026-11-21: Validation rejects truncated history (start later than 2015-10-08), gaps over 3 days in the last 400 days, stale data, and shrinking history. Added after a live run once returned only 900 days.

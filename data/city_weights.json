@@ -1,0 +1,134 @@
+{
+  "description": "Fixed city basket for a gas-demand-weighted EU temperature. A documented simplification: each country's weight is its share of 2024 inland gas consumption among the 12 countries listed; countries with two cities split their weight equally.",
+  "source": "Eurostat nrg_cb_gas, inland consumption calculated (IC_CAL), natural gas (G3000), TJ GCV, 2024. Query: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_cb_gas?format=JSON&lang=EN&nrg_bal=IC_CAL&siec=G3000&unit=TJ_GCV&time=2024",
+  "retrieved": "2026-11-21",
+  "coverage": "These 12 countries used 91.4% of EU27 inland gas consumption in 2024 (11,744,051 of 12,850,052 TJ GCV).",
+  "countryConsumptionTJ": {
+    "DE": 3062787.238,
+    "IT": 2368091.105,
+    "FR": 1304234.797,
+    "ES": 1120665.872,
+    "NL": 1058924.8,
+    "PL": 789327.609,
+    "BE": 553682.6,
+    "RO": 374161.921,
+    "HU": 330676.0,
+    "AT": 271926.397,
+    "CZ": 267537.141,
+    "EL": 242035.099
+  },
+  "cities": [
+    {
+      "city": "Berlin",
+      "country": "DE",
+      "lat": 52.52,
+      "lon": 13.41,
+      "weight": 0.1304
+    },
+    {
+      "city": "Frankfurt",
+      "country": "DE",
+      "lat": 50.11,
+      "lon": 8.68,
+      "weight": 0.1304
+    },
+    {
+      "city": "Milan",
+      "country": "IT",
+      "lat": 45.46,
+      "lon": 9.19,
+      "weight": 0.1008
+    },
+    {
+      "city": "Rome",
+      "country": "IT",
+      "lat": 41.89,
+      "lon": 12.48,
+      "weight": 0.1008
+    },
+    {
+      "city": "Paris",
+      "country": "FR",
+      "lat": 48.85,
+      "lon": 2.35,
+      "weight": 0.0555
+    },
+    {
+      "city": "Lyon",
+      "country": "FR",
+      "lat": 45.76,
+      "lon": 4.84,
+      "weight": 0.0555
+    },
+    {
+      "city": "Madrid",
+      "country": "ES",
+      "lat": 40.42,
+      "lon": -3.7,
+      "weight": 0.0477
+    },
+    {
+      "city": "Barcelona",
+      "country": "ES",
+      "lat": 41.39,
+      "lon": 2.17,
+      "weight": 0.0477
+    },
+    {
+      "city": "Amsterdam",
+      "country": "NL",
+      "lat": 52.37,
+      "lon": 4.9,
+      "weight": 0.0902
+    },
+    {
+      "city": "Warsaw",
+      "country": "PL",
+      "lat": 52.23,
+      "lon": 21.01,
+      "weight": 0.0672
+    },
+    {
+      "city": "Brussels",
+      "country": "BE",
+      "lat": 50.85,
+      "lon": 4.35,
+      "weight": 0.0471
+    },
+    {
+      "city": "Bucharest",
+      "country": "RO",
+      "lat": 44.43,
+      "lon": 26.1,
+      "weight": 0.0319
+    },
+    {
+      "city": "Budapest",
+      "country": "HU",
+      "lat": 47.5,
+      "lon": 19.04,
+      "weight": 0.0282
+    },
+    {
+      "city": "Vienna",
+      "country": "AT",
+      "lat": 48.21,
+      "lon": 16.37,
+      "weight": 0.0232
+    },
+    {
+      "city": "Prague",
+      "country": "CZ",
+      "lat": 50.08,
+      "lon": 14.44,
+      "weight": 0.0228
+    },
+    {
+      "city": "Athens",
+      "country": "EL",
+      "lat": 37.98,
+      "lon": 23.73,
+      "weight": 0.0206
+    }
+  ]
+}

@@ -6,7 +6,7 @@
 | 2. Assumptions | done |
 | 3. Netback engine | done |
 | 4. Netback page | done |
-| 5. Storage pipeline | not started |
+| 5. Storage pipeline | done |
 | 6. Storage model | not started |
 | 7. Storage page | not started |
 | 8. Automation | not started |
@@ -48,3 +48,12 @@
 - "How this is calculated", simplifications, and a table of every default with its source on the page.
 - Checked rendering at 390px and 1280px with Chrome device emulation: no horizontal scroll, no console errors, no label collisions.
 - Vitest 38 passed.
+
+### Phase 5: Storage pipeline
+- Read docs for every source first: GIE API manual v008 (PDF), Open-Meteo docs and terms, ECB reference-rate page, EIA route metadata. Endpoints recorded in `pipeline/README.md`.
+- `pipeline/sources.py`: fetchers and pure parsers for EIA, ECB, AGSI+, ALSI, Open-Meteo (archive and forecast).
+- `pipeline/build.py`: incremental fetch merged onto stored history, validation, atomic writes, keep last good file, `status.json`.
+- `data/city_weights.json`: 16 cities in 12 countries (91.4% of EU gas demand), weighted by Eurostat 2024 inland consumption.
+- Live run: storage 2015-10-01 to 2026-11-19 (4,068 days, 69.59% full), weather to 2026-11-20 plus 16-day forecast, HH $3.10 (17 Nov), EUR/USD 1.099 (20 Nov).
+- A live ALSI empty response (likely rate limit after a full refetch) was caught: last good file kept. Added one retry after 65 s.
+- pytest 44 passed.

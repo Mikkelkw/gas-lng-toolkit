@@ -99,9 +99,29 @@ Given today's EU storage level, where will storage be on 31 March under differen
 - Home: one-line pitch, two tool cards, last-updated date
 - /netback
 - /storage
+- /learn/lng-trading-basics: primer for aspiring commodity traders and finance people new to LNG (see section 5a)
 - /methodology: formulas, assumptions with sources, model fit, limitations
 - /about: who built it and why, link to LinkedIn and the GitHub repo
 - Footer on every page: "Not investment advice. Data: GIE AGSI+ / ALSI, EIA, ECB, Open-Meteo (CC BY 4.0). Built by Mikkel Wahl."
+
+## 5a. Primer page: LNG trading basics
+
+Audience: readers with a finance background but little knowledge of LNG or commodities (students, analysts, aspiring traders). Tone: clear, concrete, no jargon without a definition. Length: about 1,500 to 2,000 words, readable in 10 minutes. Link to it from the home page and from the top of both tool pages ("New to LNG? Start with the basics").
+
+Sections:
+1. **Three gas markets**: Henry Hub, TTF, JKM; why pipeline gas cannot cross oceans; LNG as the link. Supply chain: liquefaction, shipping, regasification. FOB vs DES.
+2. **The economics of a US cargo**: the tolling model (115% of HH plus a fixed liquefaction fee paid whether or not the cargo is lifted); destination flexibility.
+3. **The option analogy**: a US LNG contract as a call option on the overseas price minus HH; the fee as the premium; lifting vs cancelling a cargo (mention the 2020 cancellations).
+4. **Netbacks and the arb**: definition, a worked example with clearly labelled illustrative round numbers, why a higher destination price does not always mean a better destination.
+5. **What drives shipping cost**: charter rates, routes (Panama, Suez, Cape) and their risks, round trip, boil-off, canal fees.
+6. **Why the JKM-TTF spread trades around freight**: flexible US cargoes as swing supply; location spread intuition.
+7. **European gas storage**: injection and withdrawal seasons, the pre-winter fill target, why the 31 March level matters, summer-winter spread.
+8. **Storage as a stress test**: heating degree days, the scenario approach used in the storage tool.
+9. **How it all connects**: low storage, higher TTF, cargoes pulled from Asia, spread moves.
+10. **Glossary**: MMBtu, MWh, HDD, FOB, DES, netback, arb, boil-off, charter rate, regas, TTF, JKM, HH.
+11. **Further reading**: links to free public sources only (e.g. EIA, GIE, IEA, ENTSOG, ACER).
+
+Rules: every factual statement must be general and stable or sourced; no current prices; illustrative numbers must be labelled as illustrative. Each section ends with a one-line link to the relevant tool where useful ("Try it in the netback calculator"). Use plain headings that match search terms (e.g. "What is an LNG netback?", "How does LNG arbitrage work?").
 
 ## 6. Tech stack
 
@@ -141,6 +161,7 @@ Claude Code works through these in order, committing after each step, and only s
    - Rename routes: /netback -> /lng-netback-calculator and /storage -> /eu-gas-storage-forecast, with redirects from the old paths; update all internal links.
    - Page titles: "LNG Netback & Arbitrage Calculator: US Gulf to Europe and Asia" and "EU Gas Storage Forecast: Winter Stress Test to 31 March".
    - A unique meta description (max 155 characters) per page, Open Graph tags, canonical URLs, sitemap.xml, and robots.txt allowing indexing.
+   - Write the primer page from section 5a, with its own title ("LNG Trading Basics: Netbacks, Arbitrage and European Gas Storage Explained") and meta description; add it to the nav as "Learn" and to the sitemap.
    - A 2 to 3 sentence plain-English intro at the top of each tool page, using the terms people search for (LNG netback, LNG arbitrage, JKM TTF spread, EU gas storage forecast).
 10. **Final review**: run all tests, check every attribution is present, check all pages on mobile width. [CHECKPOINT: summary of what was built, known limitations, suggested v1.1 items]
 
