@@ -9,7 +9,7 @@
 | 5. Storage pipeline | done |
 | 6. Storage model | done |
 | 7. Storage page | done |
-| 8. Automation | not started |
+| 8. Automation | done |
 | 9. Polish | not started |
 | 10. Final review | not started |
 
@@ -72,3 +72,9 @@
 - Today's result (gas day 19 Nov 2026, 69.6% full): Normal 19.6%, Cold 5.2%, Cold + LNG shortfall 3.6%, Mild 34.1% on 31 March.
 - Browser checks at 1280px and 390px: no horizontal scroll, no page errors; presets, sliders and netback URL update verified with Chrome automation.
 - Vitest 54 passed, pytest 56 passed.
+
+### Phase 8: Automation
+- `.github/workflows/daily.yml`: 07:00 UTC cron plus manual trigger (optional full refetch). Fetch, refit model, pytest, Vitest, build, commit changed data as github-actions[bot], deploy with wrangler. A final step fails the run (so GitHub emails the owner) if any source failed, after the last good data has been deployed.
+- `.github/workflows/ci.yml`: tests, type check and build on every push and PR; deploys to Cloudflare Pages on push to main once both suites pass.
+- Verified: CI run green incl. deploy; manual daily run green (all sources ok, data commit 3fc0d47, deployed).
+- Failure handling: per-source validation and keep-last-good in `pipeline/build.py` (unit tested; also seen live when ALSI returned an empty page).

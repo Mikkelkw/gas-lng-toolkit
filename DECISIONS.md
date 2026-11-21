@@ -33,3 +33,5 @@ One line each: date, decision, reason.
 - 2026-11-21: Presets: Normal (0 C), Cold winter (-2 C), Cold + LNG shortfall (-2 C, -20% LNG), Mild (+2 C).
 - 2026-11-21: Projection logic exists in Python (back-test) and TypeScript (site). A parity case in model.json is checked by both test suites so they cannot drift.
 - 2026-11-21: Storage page payload computed at build time (current winter, range, normals, forecast) rather than shipping full history to the browser. Daily rebuild keeps it current.
+- 2026-11-21: Daily workflow fails visibly (red run, GitHub email) when any source fails, but only after committing and deploying the last good data. Partial failure never blocks the deploy.
+- 2026-11-21: Wrangler pinned to 4.166.0 in CI for reproducible deploys.
