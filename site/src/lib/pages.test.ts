@@ -64,3 +64,13 @@ describe('no repository links', () => {
     for (const f of files) expect(readFileSync(f, 'utf-8'), f).not.toMatch(/github\.com/i);
   });
 });
+
+describe('feature-request invitation', () => {
+  it('footer and about page link to LinkedIn in a new tab with rel="noopener"', () => {
+    const link = '<a href={LINKEDIN_URL} target="_blank" rel="noopener">LinkedIn</a>';
+    expect(readFileSync('src/layouts/Base.astro', 'utf-8')).toContain(`Missing something? Suggest a feature on&nbsp;${link}.`);
+    const about = readFileSync('src/pages/about.astro', 'utf-8');
+    expect(about).toContain('<h2>Suggest a feature</h2>');
+    expect(about).toContain(link);
+  });
+});

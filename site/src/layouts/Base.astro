@@ -1,5 +1,5 @@
 ---
-import { NAV, PAGES, SITE_NAME, canonical, type PageMeta } from '../lib/pages';
+import { LINKEDIN_URL, NAV, PAGES, SITE_NAME, canonical, type PageMeta } from '../lib/pages';
 // Self-hosted fonts (Fontsource, latin subset only). No external font CDN.
 import '@fontsource/inter/latin-400.css';
 import '@fontsource/inter/latin-600.css';
@@ -69,6 +69,7 @@ const here = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.ur
     <footer class="site-footer dark">
       <div class="wrap">
         <p>Not investment advice. Data: GIE AGSI+ / ALSI, EIA, ECB, Open-Meteo (CC BY 4.0). Built by Mikkel Wahl.</p>
+        <p class="suggest">Missing something? Suggest a feature on&nbsp;<a href={LINKEDIN_URL} target="_blank" rel="noopener">LinkedIn</a>.</p>
       </div>
     </footer>
   </body>
@@ -137,6 +138,8 @@ const here = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.ur
   main.wrap { min-height: 60vh; padding-bottom: 48px; }
   .site-footer { border-top: 2px solid var(--brass); color: var(--on-dark-muted); font-size: 0.875rem; padding: 18px 0; }
   .site-footer p { margin: 0; }
+  .site-footer p + p { margin-top: 6px; }
+  .site-footer a { text-decoration-color: var(--brass); text-underline-offset: 3px; }
 
   /* Thin brass rule for section dividers. */
   .rule { border: 0; height: 1px; background: var(--brass); margin: 0; }
