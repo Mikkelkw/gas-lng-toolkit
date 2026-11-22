@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { AUTHOR, GITHUB_URL, LINKEDIN_URL, PAGES } from '../lib/pages';
+import { AUTHOR, LINKEDIN_URL, PAGES } from '../lib/pages';
 import '../styles/prose.css';
 ---
 <Base page="about">
@@ -29,10 +29,9 @@ import '../styles/prose.css';
       <a href="https://open-meteo.com/">Open-Meteo.com</a> (CC BY 4.0). Data refresh daily at 07:00 UTC. If a refresh
       fails, the site keeps the last good data and shows its date.
     </p>
-    <h2>Contact and code</h2>
+    <h2>Contact</h2>
     <ul>
       <li><a href={LINKEDIN_URL}>{AUTHOR} on LinkedIn</a></li>
-      <li><a href={GITHUB_URL}>Source code on GitHub</a></li>
     </ul>
     <p class="muted small">Not investment advice. The tools are simplified models for education and discussion.</p>
   </article>

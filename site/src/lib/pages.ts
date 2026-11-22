@@ -5,7 +5,6 @@ export const SITE_NAME = 'LNG Toolkit';
 export const SITE_URL = 'https://lngtoolkit.com';
 export const AUTHOR = 'Mikkel Wahl';
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/mikkelwahl/';
-export const GITHUB_URL = 'https://github.com/Mikkelkw/gas-lng-toolkit';
 
 export interface PageMeta {
   path: string; // with trailing slash, as served

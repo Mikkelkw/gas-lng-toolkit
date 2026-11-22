@@ -57,3 +57,10 @@ describe('icons', () => {
     for (const i of m.icons) expect(existsSync(`public${i.src}`), i.src).toBe(true);
   });
 });
+
+describe('no repository links', () => {
+  it('site source and public files do not link to GitHub', () => {
+    const files = ['src/pages/about.astro', 'src/components/NetbackMethod.astro', 'src/layouts/Base.astro', 'src/lib/pages.ts'];
+    for (const f of files) expect(readFileSync(f, 'utf-8'), f).not.toMatch(/github\.com/i);
+  });
+});
