@@ -1,0 +1,39 @@
+---
+/**
+ * Amber notice when the daily refresh has been missed (status.json "updated" older than 36 hours).
+ * Checked at build time, and again in the browser: if the refresh stops running, no new build happens,
+ * so only the browser check can reveal a page that has gone stale since it was built.
+ */
+import { dataAgeText, isDataStale } from '../lib/dataAge';
+import type { StatusFile } from '../lib/storagePayload';
+
+interface Props {
+  status: StatusFile | null;
+}
+const updated = Astro.props.status?.updated ?? null;
+const staleAtBuild = isDataStale(updated, new Date());
+---
+{updated && (
+  <p class="data-age" role="status" data-updated={updated} hidden={!staleAtBuild}>
+    <strong>Check the date: </strong>{dataAgeText(updated)} The daily update is overdue.
+  </p>
+)}
+
+<script>
+  import { isDataStale } from '../lib/dataAge';
+  for (const el of document.querySelectorAll<HTMLElement>('.data-age[data-updated]')) {
+    el.hidden = !isDataStale(el.dataset.updated, new Date());
+  }
+</script>
+
+<style>
+  .data-age {
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+    background: #f6edd3;
+    border-left: 4px solid var(--brass);
+    color: var(--ink);
+    padding: 6px 10px;
+  }
+  .data-age[hidden] { display: none; }
+</style>

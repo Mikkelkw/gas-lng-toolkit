@@ -1,4 +1,5 @@
 ---
+import DataAge from '../components/DataAge.astro';
 import Base from '../layouts/Base.astro';
 import StorageTool from '../components/StorageTool';
 import StorageMethod from '../components/StorageMethod.astro';
@@ -22,6 +23,8 @@ const data = storage && weather ? buildStoragePayload(storage, weather, model as
     AGSI+ level, uses the 16-day weather forecast, then normal weather. Pick a preset or move the sliders to test a cold
     winter, an LNG shortfall or a supply cut.
   </p>
+
+  <DataAge status={status} />
 
   {data ? (
     <StorageTool client:load data={data} />

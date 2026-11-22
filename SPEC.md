@@ -128,7 +128,7 @@ Rules: every factual statement must be general and stable or sourced; no current
 - Astro static site, TypeScript, with small interactive islands (Preact) for the tools
 - Charts: Observable Plot (or Chart.js if simpler)
 - Data pipeline: Python 3.12 scripts in `/pipeline` that fetch data and write JSON to `site/public/data/`
-- Scheduling: GitHub Actions cron, daily at 07:00 UTC: fetch data, commit updated JSON, build the site, and deploy with `wrangler pages deploy` (Cloudflare API token and account ID stored as GitHub secrets)
+- Scheduling: GitHub Actions cron, daily at 05:17 UTC with a backup run at 14:43 UTC (was 07:00 until 22 Nov 2026): fetch data, commit updated JSON, build the site, and deploy with `wrangler pages deploy` (Cloudflare API token and account ID stored as GitHub secrets)
 - Tests: Vitest for TypeScript calculation modules, pytest for the pipeline
 - No database, no backend server, no Claude API at runtime
 

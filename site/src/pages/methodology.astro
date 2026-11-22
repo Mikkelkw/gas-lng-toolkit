@@ -33,7 +33,7 @@ const sources = [
 
     <h2 id="data">Data sources and refresh</h2>
     <p>
-      A scheduled job fetches all data at 07:00 UTC. Each source is checked (freshness, gaps, value ranges) before it
+      A scheduled job fetches all data daily at 05:17 UTC, with a backup run at 14:43 UTC. Each source is checked (freshness, gaps, value ranges) before it
       replaces the previous file. If a check fails, the last good data stays live with its date.
     </p>
   </div>

@@ -47,6 +47,8 @@ export interface ModelFile {
 }
 
 export interface StatusFile {
+  /** When the last daily run finished (ISO timestamp). */
+  updated?: string;
   storage?: { ok: boolean; lastSuccess?: string; error?: string | null };
   weather?: { ok: boolean; lastSuccess?: string; error?: string | null };
 }

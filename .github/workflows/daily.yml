@@ -2,7 +2,8 @@ name: Daily data refresh
 
 on:
   schedule:
-    - cron: '0 7 * * *' # 07:00 UTC daily (SPEC section 6)
+    - cron: '17 5 * * *' # 05:17 UTC: off-peak, avoids the top-of-hour queue where GitHub drops scheduled runs
+    - cron: '43 14 * * *' # 14:43 UTC backup run; the pipeline is idempotent
   workflow_dispatch:
     inputs:
       full:

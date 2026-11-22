@@ -119,3 +119,4 @@
 - Netback intro: "JKM-TTF spread".
 - Tests: Vitest 88 passed, pytest 56 passed, astro check clean. Lighthouse mobile (local): 97 to 100 in all categories on the changed pages.
 - 2026-11-21: Favicon set, web manifest and home-page WebSite JSON-LD added; deployed and checked live.
+- 2026-11-22: GitHub links removed from the site. Daily refresh moved to 05:17 and 14:43 UTC; staleness notice on home and storage pages.

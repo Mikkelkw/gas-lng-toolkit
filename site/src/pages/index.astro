@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import RouteMap from '../components/RouteMap.astro';
+import DataAge from '../components/DataAge.astro';
 import model from '../../../data/model.json';
 import { assumptionItems, defaultRoutes } from '../lib/assumptions';
 import { netbackFigure, projectionFigure, storageFigure, type LiveFigure } from '../lib/home';
@@ -12,7 +13,8 @@ const files = import.meta.glob<unknown>('../../public/data/{storage,weather,stat
 const pick = <T,>(name: string) => (Object.entries(files).find(([k]) => k.endsWith(`/${name}.json`))?.[1] ?? null) as T | null;
 const storage = pick<StorageFile>('storage');
 const weather = pick<WeatherFile>('weather');
-const payload = storage && weather ? buildStoragePayload(storage, weather, model as unknown as ModelFile, pick<StatusFile>('status')) : null;
+const status = pick<StatusFile>('status');
+const payload = storage && weather ? buildStoragePayload(storage, weather, model as unknown as ModelFile, status) : null;
 const items = overlayMarket(assumptionItems, pick<MarketFile>('market'));
 
 const live: (LiveFigure & { href: string; numeric: boolean })[] = [
@@ -39,6 +41,7 @@ const sources = ['GIE AGSI+', 'GIE ALSI', 'EIA', 'ECB', 'Open-Meteo'];
       <RouteMap />
 
       <h2 class="sr-only" id="live-title">Latest figures</h2>
+      <DataAge status={status} />
       <ul class="live" aria-labelledby="live-title">
         {live.map((f) => (
           <li>
